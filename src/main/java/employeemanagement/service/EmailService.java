@@ -13,9 +13,9 @@ public class EmailService {
             SimpleEmail email = new SimpleEmail();
             email.setHostName("smtp.gmail.com");
             email.setSmtpPort(587);
-            email.setAuthentication("dcpatel073@gmail.com", "yycfhkmsitaftugx"); // Use your Gmail credentials
+            email.setAuthentication("dcpatel073@gmail.com", "yycfhkmsitaftugx"); 
             email.setStartTLSRequired(true);
-            email.setFrom("dcpatel073@gmail.com"); // Sender's email
+            email.setFrom("dcpatel073@gmail.com"); 
             email.setSubject("Welcome to Employee Management System - Your Login Credentials");
 
             String emailContent = String.format(
