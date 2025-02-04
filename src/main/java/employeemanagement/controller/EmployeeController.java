@@ -73,14 +73,6 @@ public class EmployeeController {
 		model.addAttribute("employee", employee);
 		return "employee-dashboard";
 	}
-	
-	@RequestMapping("/show/{eid}")
-	public String showDashboare(@PathVariable("eid") int eid, Model model) {
-		Employee employee = this.employeeDao.getEmployee(eid);
-		model.addAttribute("employee", employee);
-		return "employee-dashboard";
-	}
-
 
 	// handle signup
 	@RequestMapping(value = "/signup-employee", method = RequestMethod.POST)
@@ -108,7 +100,7 @@ public class EmployeeController {
 		
 		HttpSession session = request.getSession();
 		session.setAttribute("id", employee.getId());
-		
+
 		employeeDao.createEmployee(employee);
 		emailService.sendCredentialEmail(employee, plainPassword);
 
@@ -124,6 +116,13 @@ public class EmployeeController {
 		Employee employee = this.employeeDao.getEmployee(eid);
 		model.addAttribute("employee", employee);
 		return "eupdate_form";
+	}
+
+	@RequestMapping("/show/{eid}")
+	public String showDashboare(@PathVariable("eid") int eid, Model model) {
+		Employee employee = this.employeeDao.getEmployee(eid);
+		model.addAttribute("employee", employee);
+		return "employee-dashboard";
 	}
 
 	// Handle Update Employee Form
