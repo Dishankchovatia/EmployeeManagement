@@ -15,7 +15,7 @@ public class EmailService {
             email.setSmtpPort(587);
             email.setAuthentication("dcpatel073@gmail.com", "yycfhkmsitaftugx"); 
             email.setStartTLSRequired(true);
-            email.setFrom("dcpatel073@gmail.com"); 
+            email.setFrom("dcpatel073@gmail.com", "Employee Management"); 
             email.setSubject("Welcome to Employee Management System - Your Login Credentials");
 
             String emailContent = String.format(

@@ -26,6 +26,17 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* Navbar Styling */
+        .navbar {
+            background-color: #343a40; /* dark background */
+        }
+        .navbar-brand, .nav-link {
+            color: #ffffff !important;
+        }
+        .nav-link:hover {
+            color: var(--secondary-color) !important;
+        }
+
         .dashboard-container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -142,7 +153,7 @@
 
         .custom-table td {
             padding: 1rem;
-            vertical-align:middle;
+            vertical-align: middle;
             border-color: #e2e8f0;
         }
 
@@ -219,9 +230,61 @@
         .btn-back:hover {
             background-color: #475569;
         }
+
+        /* Horizontal Action Icons */
+        .action-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/dashboard">
+                <i class="fas fa-users-gear me-2"></i>Employee Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <!-- Import Link triggers hidden file input -->
+                        <a class="nav-link" href="#" id="importLink">
+                            <i class="fas fa-file-upload me-2"></i> Import
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="${pageContext.request.contextPath}/employees/export" method="get">
+                            <button type="submit" class="btn btn-success ms-2">
+                                <i class="fas fa-file-excel me-2"></i>Export
+                            </button>
+                        </form>
+                    </li>
+                    <li class="nav-item">
+                        <a href="add-employee" class="btn btn-primary ms-2">
+                            <i class="fas fa-user-plus me-2"></i>Add Employee
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-secondary ms-2">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hidden Import Form -->
+    <form id="importForm" action="${pageContext.request.contextPath}/importEmployees" method="POST" enctype="multipart/form-data" style="display:none;">
+        <input type="file" name="file" id="hiddenFile" accept=".xls, .xlsx" required />
+    </form>
+
     <div class="dashboard-container">
         <header class="dashboard-header">
             <h1 class="dashboard-title">
@@ -229,123 +292,92 @@
             </h1>
         </header>
        
-        
-         <!-- Display Messages -->
+        <!-- Display Messages -->
         <c:if test="${not empty message}">
             <div class="alert alert-info">
                 ${message}
             </div>
         </c:if>
-        <c:if test="${message}">
-            <div class="alert alert-info">
-                ${message}
-            </div>
-        </c:if>
-
-        <!-- File Upload Form -->
-        <form action="${pageContext.request.contextPath}/importEmployees" method="POST" enctype="multipart/form-data">
-            <div class="mb-4">
-                <label for="file" class="form-label">Upload Excel File</label>
-                <input type="file" name="file" id="file" class="form-control" accept=".xls, .xlsx" required />
-            </div>
-            <button type="submit" class="btn btn-primary">Import Employees</button>
-        </form>
 
         <div class="search-section">
             <form action="${pageContext.request.contextPath}/listofemployees" method="GET" class="search-box">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" name="searchName" class="form-control" placeholder="Search by name..." value="${param.searchName}" />
             </form>
-            
-            <div class="action-buttons">
-                <form action="${pageContext.request.contextPath}/employees/export" method="get">
-                    <button type="submit" class="btn btn-custom btn-download">
-                        <i class="fas fa-file-excel"></i>
-                        Export Excel
-                    </button>
-                </form>
-                
-                <a href="add-employee" class="btn btn-custom btn-add">
-                    <i class="fas fa-user-plus"></i>
-                    Add Employee
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-custom btn-back">
-                    <i class="fas fa-arrow-left"></i>
-                    Back
-                </a>
-            </div>
         </div>
 
         <div class="table-container">
-        <c:choose>
-        <c:when test="${empty employees}">
-            <div class="text-center py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h3 class="text-muted">No Employees Found</h3>
-                <p class="text-muted">Try adjusting your search criteria</p>
-            </div>
-        </c:when>
-        <c:otherwise>
-            <table class="table custom-table">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-hashtag me-2"></i>S.No.</th>
-                        <th><i class="fas fa-id-card me-2"></i>ID</th>
-                        <th><i class="fas fa-user me-2"></i>Name</th>
-                        <th><i class="fas fa-phone me-2"></i>Mobile No.</th>
-                        <th><i class="fas fa-envelope me-2"></i>Email Id</th>
-                        <th><i class="fas fa-venus-mars me-2"></i>Gender</th>
-                        <th><i class="fas fa-calendar-day me-2"></i>DOB</th>
-                        <th><i class="fas fa-calendar-plus me-2"></i>DOJ</th>
-                        <th><i class="fas fa-cogs me-2"></i>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:forEach items="${employees}" var="e" varStatus="status">
-                        <tr class="table-row">
-                            <td>${(currentPage - 1) * size + status.index + 1}</td>
-                            <td class="employee-id">EMP00${e.id}</td>
-                            <td>${e.empName}</td>
-                            <td>${e.empNumber}</td>
-                            <td>${e.emailId}</td>
-                            <td>${e.gender}</td>
-                            <td>${e.dob}</td>
-                            <td>${e.doj}</td>
-                            <td>
-                                <a href="update/${e.id}" class="action-icon" title="Edit Employee">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                
-                                <c:choose>
-                <c:when test="${e.role == 'ADMIN'}">
-                    <span class="badge badge-info">Admin</span>
+            <c:choose>
+                <c:when test="${empty employees}">
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h3 class="text-muted">No Employees Found</h3>
+                        <p class="text-muted">Try adjusting your search criteria</p>
+                    </div>
                 </c:when>
                 <c:otherwise>
-                    <form action="${pageContext.request.contextPath}/toggle-employee-status/${e.id}" method="post">
-                        <input type="hidden" name="status" value="${!e.active}"/>
-                        <button type="submit" class="btn btn-${e.active ? 'danger' : 'success'}">
-                            ${e.active ? 'Deactivate' : 'Activate'}
-                        </button>
-                    </form>
+                    <table class="table custom-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-2"></i>S.No.</th>
+                                <th><i class="fas fa-id-card me-2"></i>ID</th>
+                                <th><i class="fas fa-user me-2"></i>Name</th>
+                                <th><i class="fas fa-phone me-2"></i>Mobile No.</th>
+                                <th><i class="fas fa-envelope me-2"></i>Email Id</th>
+                                <th><i class="fas fa-venus-mars me-2"></i>Gender</th>
+                                <th><i class="fas fa-calendar-day me-2"></i>DOB</th>
+                                <th><i class="fas fa-calendar-plus me-2"></i>DOJ</th>
+                                <th><i class="fas fa-cogs me-2"></i>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${employees}" var="e" varStatus="status">
+                                <tr class="table-row">
+                                    <td>${(currentPage - 1) * size + status.index + 1}</td>
+                                    <td class="employee-id">EMP00${e.id}</td>
+                                    <td>${e.empName}</td>
+                                    <td>${e.empNumber}</td>
+                                    <td>${e.emailId}</td>
+                                    <td>${e.gender}</td>
+                                    <td>${e.dob}</td>
+                                    <td>${e.doj}</td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <a href="update/${e.id}" class="action-icon" title="Edit Employee">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            <c:choose>
+                                                <c:when test="${e.role == 'ADMIN'}">
+                                                    <span class="badge bg-info" title="Admin">
+                                                        <i class="fas fa-user-shield"></i>
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <form action="${pageContext.request.contextPath}/toggle-employee-status/${e.id}" method="post" style="display:inline;">
+                                                        <input type="hidden" name="status" value="${!e.active}"/>
+                                                        <button type="submit" class="btn btn-${e.active ? 'danger' : 'success'}" title="${e.active ? 'Deactivate' : 'Activate'}">
+                                                            <i class="fas fa-power-off"></i>
+                                                        </button>
+                                                    </form>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            
+                                            <c:if test="${e.role != 'ADMIN' && e.active}">
+                                                <form action="${pageContext.request.contextPath}/promote-to-admin/${e.id}" method="post" style="display:inline;">
+                                                    <button type="submit" class="btn btn-warning" title="Promote to Admin">
+                                                        <i class="fas fa-user-shield"></i>
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
                 </c:otherwise>
             </c:choose>
-        
-        
-            <c:if test="${e.role != 'ADMIN' && e.active}">
-                <form action="${pageContext.request.contextPath}/promote-to-admin/${e.id}" method="post">
-                    <button type="submit" class="btn btn-warning">Promote to Admin</button>
-                </form>
-            </c:if>
-        </td>
-       
-                           
-                        </tr>
-                    </c:forEach>
-                </tbody>
-              </c:otherwise>
-    		</c:choose>
-          </table>
         </div>
 
         <div class="pagination">
@@ -373,6 +405,18 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Trigger hidden file input when "Import" link is clicked
+        document.getElementById('importLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('hiddenFile').click();
+        });
+
+        // Automatically submit the form when a file is selected
+        document.getElementById('hiddenFile').addEventListener('change', function() {
+            document.getElementById('importForm').submit();
+        });
+    </script>
 </body>
 </html>

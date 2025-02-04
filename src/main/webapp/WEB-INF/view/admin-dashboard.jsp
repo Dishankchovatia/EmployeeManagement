@@ -1,186 +1,245 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@page isELIgnored="false"%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<%@page isELIgnored="false"%>
-<title>Employee Management System</title>
-<link
-	href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
-	rel="stylesheet">
-<style>
-.hero-section {
-	min-height: 100vh;
-	background-color: #f8f9fa;
-	background-image:
-		url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-	padding: 2rem;
-	position: relative;
-	overflow: hidden;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #059669;
+            --success-dark: #047857;
+            --danger: #dc2626;
+            --danger-dark: #b91c1c;
+        }
 
-.hero-section::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: linear-gradient(135deg, rgba(147, 206, 222, 0.8) 0%,
-		rgba(117, 189, 209, 0.8) 41%, rgba(73, 165, 191, 0.8) 100%);
-	z-index: 1;
-}
+        body {
+            min-height: 100vh;
+            background: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
 
-.container {
-	position: relative;
-	z-index: 2;
-}
+        .dashboard-container {
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(5, 150, 105, 0.15) 0%, transparent 40%);
+            padding: 2rem 1rem;
+        }
 
-.card-container {
-	margin-top: 3rem;
-	display: flex;
-	gap: 2rem;
-	justify-content: center;
-	flex-wrap: wrap;
-}
+        .header {
+            position: relative;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
 
-.action-card {
-	width: 340px;
-	transition: all 0.3s ease;
-	background: rgba(255, 255, 255, 0.95);
-	border-radius: 15px;
-	padding: 2rem;
-	text-align: center;
-	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	backdrop-filter: blur(10px);
-}
+        .welcome-text {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.action-card:hover {
-	transform: translateY(-10px);
-	box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 600px;
+        }
 
-.welcome-text {
-	color: #1a237e;
-	font-size: 3rem;
-	margin-bottom: 1.5rem;
-	font-weight: 700;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
 
-.subtitle {
-	color: #283593;
-	font-size: 1.4rem;
-	margin-bottom: 3rem;
-	font-weight: 400;
-	max-width: 800px;
-	margin-left: auto;
-	margin-right: auto;
-}
+        .action-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
 
-.action-card h3 {
-	color: #1a237e;
-	font-size: 1.8rem;
-	margin-bottom: 1rem;
-	font-weight: 600;
-}
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--success));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
 
-.action-card p {
-	color: #455a64;
-	font-size: 1.1rem;
-	margin-bottom: 1.5rem;
-	line-height: 1.6;
-}
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
 
-.btn-custom {
-	padding: 1rem 2rem;
-	font-size: 1.1rem;
-	border-radius: 50px;
-	text-decoration: none;
-	transition: all 0.3s ease;
-	display: inline-block;
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-}
+        .action-card:hover::before {
+            transform: scaleX(1);
+        }
 
-.btn-add {
-	background: linear-gradient(45deg, #2ecc71, #27ae60);
-	color: white;
-	border: none;
-}
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
 
-.btn-list {
-	background: linear-gradient(45deg, #3498db, #2980b9);
-	color: white;
-	border: none;
-}
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
 
-.btn-custom:hover {
-	transform: scale(1.05);
-	color: white;
-	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
+        .card-description {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
 
-/* Added icon styles */
-.action-card::before {
-	content: '';
-	display: block;
-	width: 60px;
-	height: 60px;
-	margin: 0 auto 1.5rem;
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-}
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
 
-.action-card:nth-child(1)::before {
-	background-image:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232ecc71'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E");
-}
+        .btn-add {
+            background: var(--success);
+            color: white;
+            border: none;
+            width: 100%;
+        }
 
-.action-card:nth-child(2)::before {
-	background-image:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3E%3Cpath d='M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z'/%3E%3C/svg%3E");
-}
-</style>
+        .btn-add:hover {
+            background: var(--success-dark);
+            color: white;
+        }
 
+        .btn-list {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-list:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        .btn-logout {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                text-align: center;
+                padding: 1.5rem;
+            }
+
+            .welcome-text {
+                font-size: 1.875rem;
+            }
+
+            .btn-logout {
+                position: static;
+                margin-top: 1rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-	<div
-		class="hero-section d-flex align-items-center justify-content-center">
-		<div class="container">
-			<h1 class="welcome-text text-center">Welcome ${admin.adminName}!</h1>
-			<p class="subtitle text-center">Streamline your workforce
-				management with our intuitive system</p>
+    <div class="dashboard-container">
+        <div class="container">
+            <div class="header">
+                <h1 class="welcome-text">Welcome ${admin.adminName}!</h1>
+                <p class="subtitle">Streamline your workforce management with our intuitive system</p>
+                <a href="${pageContext.request.contextPath}/admin-logout" class="btn btn-logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </a>
+            </div>
 
-			<div class="card-container">
-				<div class="action-card">
-					<h3>Add Employee</h3>
-					<p>Register new employees to the system with their details and
-						credentials</p>
-					<a href="add-employee" class="btn btn-custom btn-add">Add New
-						Employee</a>
-				</div>
+            <div class="card-grid">
+                <div class="action-card">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    <h3 class="card-title">Add Employee</h3>
+                    <p class="card-description">Register new employees to the system with their details and credentials</p>
+                    <a href="add-employee" class="btn btn-add">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <line x1="19" y1="8" x2="19" y2="14"></line>
+                            <line x1="22" y1="11" x2="16" y2="11"></line>
+                        </svg>
+                        Add New Employee
+                    </a>
+                </div>
 
-				<div class="action-card">
-					<h3>View Employees</h3>
-					<p>Access and manage your complete employee database with
-						advanced filtering options</p>
-					<a href="listofemployees" class="btn btn-custom btn-list">View
-						All Employees</a>
-				</div>
-				<div class="float-right">
-					<a href="${pageContext.request.contextPath}/admin-logout"
-						class="btn btn-danger"> <i class="fas fa-sign-out-alt"></i>
-						Logout
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<script
-		src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+                <div class="action-card">
+                    <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <h3 class="card-title">View Employees</h3>
+                    <p class="card-description">Access and manage your complete employee database with advanced filtering options</p>
+                    <a href="listofemployees" class="btn btn-list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        View All Employees
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

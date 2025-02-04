@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
@@ -17,6 +18,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,14 +28,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import employeemanagement.dao.EmployeeDao;
 import employeemanagement.model.Employee;
+import employeemanagement.service.EmailService;
 
 @Controller
 public class ExcelHelper {
-
 	@Autowired
 	private EmployeeDao employeeDao;
 
-	// import through excel
+	@Autowired
+	private EmailService emailService;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	@PostMapping("/importEmployees")
 	public String importEmployees(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 		if (file.isEmpty()) {
@@ -41,48 +48,113 @@ public class ExcelHelper {
 			return "redirect:/listofemployees";
 		}
 
+		List<String> errors = new ArrayList<>();
+		int successCount = 0;
+		int rowNumber = 0;
+
 		try (InputStream inputStream = file.getInputStream()) {
 			Workbook workbook = new XSSFWorkbook(inputStream);
 			Sheet sheet = workbook.getSheetAt(0);
 
 			for (Row row : sheet) {
+				rowNumber++;
 				if (row.getRowNum() == 0) {
 					continue;
 				}
 
-				int id = (int) row.getCell(0).getNumericCellValue();
-				String name = getCellValueAsString(row.getCell(1));
-				String mobile = getCellValueAsString(row.getCell(2));
-				String email = getCellValueAsString(row.getCell(3));
-				String gender = getCellValueAsString(row.getCell(4));
-				String dob = getCellValueAsString(row.getCell(5));
-				String doj = getCellValueAsString(row.getCell(6));
+				try {
 
-				Employee existingEmployee = employeeDao.getEmployee(id);
-				if (existingEmployee != null) {
-					// Update existing employee
-					existingEmployee.setEmpName(name);
-					existingEmployee.setEmpNumber(mobile);
-					existingEmployee.setEmailId(email);
-					existingEmployee.setGender(gender);
-					existingEmployee.setDob(dob);
-					existingEmployee.setDoj(doj);
-					employeeDao.updateEmployee(existingEmployee); // Update in the database
-				} else {
-					// Add new
-					Employee newEmployee = new Employee();
-					newEmployee.setId(id);
-					newEmployee.setEmpName(name);
-					newEmployee.setEmpNumber(mobile);
-					newEmployee.setEmailId(email);
-					newEmployee.setGender(gender);
-					newEmployee.setDob(dob);
-					newEmployee.setDoj(doj);
-					employeeDao.createEmployee(newEmployee);
+					int id = (int) row.getCell(0).getNumericCellValue();
+					String name = getCellValueAsString(row.getCell(1));
+
+					Cell mobileCell = row.getCell(2);
+					String mobile;
+					if (mobileCell.getCellType() == CellType.NUMERIC) {
+
+						mobile = String.format("%.0f", mobileCell.getNumericCellValue());
+					} else {
+						mobile = mobileCell.getStringCellValue();
+					}
+					String email = getCellValueAsString(row.getCell(3));
+					String gender = getCellValueAsString(row.getCell(4));
+					String dob = getCellValueAsString(row.getCell(5));
+					String doj = getCellValueAsString(row.getCell(6));
+					String plainPassword = getCellValueAsString(row.getCell(7));
+
+					Employee existingEmployeeByEmail = employeeDao.findEmployeeByEmail(email);
+					boolean isMobileExists = employeeDao.isMobileNumberExists(mobile);
+
+					Employee existingEmployee = employeeDao.getEmployee(id);
+
+					if (existingEmployee != null) {
+						// Update existing employee
+						if (existingEmployeeByEmail != null && existingEmployeeByEmail.getId() != id) {
+							errors.add(
+									"Row " + rowNumber + ": Email '" + email + "' already exists for another employee");
+							continue;
+						}
+						if (isMobileExists && !mobile.equals(existingEmployee.getEmpNumber())) {
+							errors.add("Row " + rowNumber + ": Mobile number '" + mobile
+									+ "' already exists for another employee");
+							continue;
+						}
+
+						existingEmployee.setEmpName(name);
+						existingEmployee.setEmpNumber(mobile);
+						existingEmployee.setEmailId(email);
+						existingEmployee.setGender(gender);
+						existingEmployee.setDob(dob);
+						existingEmployee.setDoj(doj);
+						String encryptedPassword = passwordEncoder.encode(plainPassword);
+						existingEmployee.setPassword(encryptedPassword);
+						employeeDao.updateEmployee(existingEmployee);
+					} else {
+						// Add new employee
+						if (existingEmployeeByEmail != null) {
+							errors.add("Row " + rowNumber + ": Email '" + email + "' already exists");
+							continue;
+						}
+						if (isMobileExists) {
+							errors.add("Row " + rowNumber + ": Mobile number '" + mobile + "' already exists");
+							continue;
+						}
+
+						Employee newEmployee = new Employee();
+						newEmployee.setId(id);
+						newEmployee.setEmpName(name);
+						newEmployee.setEmpNumber(mobile);
+						newEmployee.setEmailId(email);
+						newEmployee.setGender(gender);
+						newEmployee.setDob(dob);
+						newEmployee.setDoj(doj);
+						String encryptedPassword = passwordEncoder.encode(plainPassword);
+						newEmployee.setPassword(encryptedPassword);
+
+						employeeDao.createEmployee(newEmployee);
+
+						try {
+							emailService.sendCredentialEmail(newEmployee, plainPassword);
+						} catch (Exception e) {
+							errors.add("Row " + rowNumber + ": Employee created but failed to send email - "
+									+ e.getMessage());
+						}
+					}
+					successCount++;
+
+				} catch (Exception e) {
+					errors.add("Row " + rowNumber + ": " + e.getMessage());
 				}
 			}
 
-			redirectAttributes.addFlashAttribute("message", "Employees imported successfully!");
+			StringBuilder message = new StringBuilder();
+			if (successCount > 0) {
+				message.append(successCount).append(" employees imported successfully. ");
+			}
+			if (!errors.isEmpty()) {
+				message.append("Errors occurred: \n").append(String.join("\n", errors));
+			}
+			redirectAttributes.addFlashAttribute("message", message.toString());
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			redirectAttributes.addFlashAttribute("message", "Failed to import employees: " + e.getMessage());
@@ -114,7 +186,7 @@ public class ExcelHelper {
 		}
 	}
 
-	//export through excel
+	// export through excel
 	@GetMapping("/employees/export")
 	public void downloadExcel(HttpServletResponse response) throws IOException {
 		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -125,7 +197,7 @@ public class ExcelHelper {
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet("Employees");
 			Row headerRow = sheet.createRow(0);
-			String[] columns = { "ID", "Name", "Mobile No", "Email", "Gender", "DOB", "DOJ" };
+			String[] columns = { "ID", "Name", "Mobile No", "Email", "Gender", "DOB", "DOJ", "PASSWORD" };
 
 			for (int i = 0; i < columns.length; i++) {
 				Cell cell = headerRow.createCell(i);
@@ -143,6 +215,7 @@ public class ExcelHelper {
 				row.createCell(4).setCellValue(emp.getGender());
 				row.createCell(5).setCellValue(emp.getDob().toString());
 				row.createCell(6).setCellValue(emp.getDoj().toString());
+				row.createCell(7).setCellValue(emp.getPassword().toString());
 			}
 
 			workbook.write(response.getOutputStream());

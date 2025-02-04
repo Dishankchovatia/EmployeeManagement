@@ -123,7 +123,7 @@ public class EmployeeDao {
 			}
 			employee.setActive(status);
 			hibernateTemplate.update(employee);
-		}
+		} 
 	}
 
 	// promote to admin
