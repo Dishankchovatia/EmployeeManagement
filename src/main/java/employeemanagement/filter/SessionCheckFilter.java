@@ -26,7 +26,7 @@ public class SessionCheckFilter implements Filter {
 
 		boolean isPublicResource = requestURI.contains("/resources/") || requestURI.contains("/css/")
 				|| requestURI.contains("/js/") || requestURI.contains("/images/")
-				|| requestURI.contains("/handle-login") || requestURI.contains("/handle-signin");
+				|| requestURI.contains("/handle-login") || requestURI.contains("/handle-signin")|| requestURI.contains("/signup-employee");
 
 		if (isPublicPage || isPublicResource) {
 			chain.doFilter(request, response);
