@@ -30,7 +30,7 @@ public class EmailService {
                 "Best regards,\n" +
                 "Employee Management Team",
                 employee.getEmpName(),
-                employee.getId(),
+                employee.getEmployeeId(),
                 employee.getEmailId(),
                 plainPassword
             );

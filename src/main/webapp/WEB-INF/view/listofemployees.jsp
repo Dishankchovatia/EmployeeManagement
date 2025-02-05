@@ -244,7 +244,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="${pageContext.request.contextPath}/dashboard">
-                <i class="fas fa-users-gear me-2"></i>Employee Dashboard
+                <i class="fas fa-users-gear me-2"></i>Admin Dashboard
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -259,7 +259,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <form action="${pageContext.request.contextPath}/employees/export" method="get">
+                        <form action="${pageContext.request.contextPath}/export" method="get">
                             <button type="submit" class="btn btn-success ms-2">
                                 <i class="fas fa-file-excel me-2"></i>Export
                             </button>
@@ -288,7 +288,7 @@
     <div class="dashboard-container">
         <header class="dashboard-header">
             <h1 class="dashboard-title">
-                <i class="fas fa-users-gear me-2"></i>Employee Dashboard
+                <i class="fas fa-users-gear me-2"></i>Employee List
             </h1>
         </header>
        
@@ -320,7 +320,8 @@
                         <thead>
                             <tr>
                                 <th><i class="fas fa-hashtag me-2"></i>S.No.</th>
-                                <th><i class="fas fa-id-card me-2"></i>ID</th>
+                                <!-- <th><i class="fas fa-id-card me-2"></i>ID</th> -->
+                                <th><i class="fas fa-id-card me-2"></i>EMPID</th>
                                 <th><i class="fas fa-user me-2"></i>Name</th>
                                 <th><i class="fas fa-phone me-2"></i>Mobile No.</th>
                                 <th><i class="fas fa-envelope me-2"></i>Email Id</th>
@@ -334,7 +335,8 @@
                             <c:forEach items="${employees}" var="e" varStatus="status">
                                 <tr class="table-row">
                                     <td>${(currentPage - 1) * size + status.index + 1}</td>
-                                    <td class="employee-id">EMP00${e.id}</td>
+                                    <%-- <td class="employee-id">${e.id}</td> --%>
+                                    <td>${e.employeeId}</td>
                                     <td>${e.empName}</td>
                                     <td>${e.empNumber}</td>
                                     <td>${e.emailId}</td>

@@ -22,17 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import employeemanagement.dao.AdminDao;
 import employeemanagement.dao.EmployeeDao;
-import employeemanagement.model.Admin;
 import employeemanagement.model.Employee;
 import employeemanagement.service.EmailService;
 
 @Controller
 public class AdminController {
-
-	@Autowired
-	private AdminDao adminDao;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -43,43 +38,10 @@ public class AdminController {
 	@Autowired
 	private EmailService emailService;
 
-	// employee login
-	@GetMapping("/login")
-	public String adminLogin() {
-		return "admin-login";
-	}
-
-	// handle employee login
-	@PostMapping("/handle-login")
-	public RedirectView handleAdminLogin(@RequestParam String adminId, @RequestParam String password,
-			HttpServletRequest request, RedirectAttributes redirectAttributes) {
-
-		Admin admin = adminDao.getAdminByAdminId(adminId);
-
-		if (admin != null && passwordEncoder.matches(password, admin.getPassword())) {
-			HttpSession session = request.getSession();
-			session.setAttribute("adminId", admin.getAdminId());
-			session.setAttribute("adminName", admin.getAdminName());
-			return new RedirectView(request.getContextPath() + "/dashboard");
-		} else {
-			redirectAttributes.addFlashAttribute("error", "Invalid credentials");
-			return new RedirectView(request.getContextPath() + "/login?error=true");
-		}
-	}
-
-	// dashboard view
 	@GetMapping("/dashboard")
-	public String adminDashboard(HttpServletRequest request, Model model) {
-		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("adminId") == null) {
-			return "redirect:/login";
-		}
-		String adminId = (String) session.getAttribute("adminId");
-		Admin admin = adminDao.getAdminByAdminId(adminId);
-		if (admin == null) {
-			return "redirect:/login";
-		}
-		model.addAttribute("admin", admin);
+	public String adminDashboard(Model model, String employeeId) {
+		Employee employee = employeeDao.findEmployeeByEmployeeId(employeeId);
+		model.addAttribute("employee", employee);
 		return "admin-dashboard";
 	}
 
@@ -88,40 +50,6 @@ public class AdminController {
 	public String addEmployee(Model m) {
 		m.addAttribute("title", "Add Employee");
 		return "add_employee_form";
-	}
-
-	// Handle Add Employee Form
-	@RequestMapping(value = "/handle-employee", method = RequestMethod.POST)
-	public RedirectView handleEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
-			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
-
-		boolean emailExists = employeeDao.isEmailExists(employee.getEmailId());
-		boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber());
-
-		if (emailExists || mobileExists) {
-			model.addAttribute("errorEmail", emailExists ? "This email is already in use." : null);
-			model.addAttribute("errorMobile", mobileExists ? "This mobile number is already in use." : null);
-			return new RedirectView("add-employee");
-		}
-
-		// Validate form inputs
-		if (result.hasErrors()) {
-			redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
-			redirectAttributes.addFlashAttribute("employee", employee);
-			return new RedirectView("add-employee");
-		}
-
-		String plainPassword = employee.getPassword();
-		// Encrypt password
-		String encryptedPassword = passwordEncoder.encode(employee.getPassword());
-		employee.setPassword(encryptedPassword);
-
-		employeeDao.createEmployee(employee);
-		emailService.sendCredentialEmail(employee, plainPassword);
-
-		RedirectView redirectView = new RedirectView();
-		redirectView.setUrl(request.getContextPath() + "/listofemployees");
-		return redirectView;
 	}
 
 	// Update Employee Form
@@ -137,34 +65,53 @@ public class AdminController {
 	public RedirectView updateEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
 			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
 
-		Employee existingEmployee = employeeDao.getEmployee(employee.getId());
+		HttpSession session = request.getSession();
 
-		boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
-				&& !employee.getEmailId().equals(existingEmployee.getEmailId());
-		boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
-				&& !employee.getEmpNumber().equals(existingEmployee.getEmpNumber());
+		String role = (String) session.getAttribute("role");
+		Integer loggedInUserId = (Integer) session.getAttribute("id");
 
-		if (emailExists || mobileExists) {
-			if (emailExists) {
-				model.addAttribute("errorEmail", "This email is already in use.");
+		if (role == null || loggedInUserId == null) {
+
+			redirectAttributes.addFlashAttribute("error", "You need to log in first.");
+			return new RedirectView(request.getContextPath() + "/login");
+		}
+		try {
+
+			Employee existingEmployee = employeeDao.getEmployee(employee.getId());
+
+			boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
+					&& !employee.getEmailId().equals(existingEmployee.getEmailId());
+			boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
+					&& !employee.getEmpNumber().equals(existingEmployee.getEmpNumber());
+
+			if (emailExists || mobileExists) {
+				if (emailExists) {
+					model.addAttribute("errorEmail", "This email is already in use.");
+				}
+				if (mobileExists) {
+					model.addAttribute("errorMobile", "This mobile number is already in use.");
+				}
+
+				RedirectView redirectView = new RedirectView(request.getContextPath() + "/update/" + employee.getId());
+				return redirectView;
 			}
-			if (mobileExists) {
-				model.addAttribute("errorMobile", "This mobile number is already in use.");
+
+			if (result.hasErrors()) {
+				redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
+				redirectAttributes.addFlashAttribute("employee", employee);
+
+				// Redirect back to the update page with the validation errors
+				RedirectView redirectView = new RedirectView(request.getContextPath() + "/update/" + employee.getId());
+				return redirectView;
 			}
 
-			RedirectView redirectView = new RedirectView(request.getContextPath() + "/update/" + employee.getId());
-			return redirectView;
+			employeeDao.updateEmployee(employee);
+
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "The data was updated by another user. Please try again.");
+			return new RedirectView(request.getContextPath() + "/error");
 		}
 
-		// Validate form inputs
-		if (result.hasErrors()) {
-			redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
-			redirectAttributes.addFlashAttribute("employee", employee);
-
-			RedirectView redirectView = new RedirectView(request.getContextPath() + "/update/" + employee.getId());
-			return redirectView;
-		}
-		employeeDao.updateEmployee(employee);
 		return new RedirectView(request.getContextPath() + "/listofemployees");
 	}
 
@@ -187,22 +134,32 @@ public class AdminController {
 	public RedirectView promoteToAdmin(@PathVariable("id") int employeeId, HttpServletRequest request,
 			RedirectAttributes redirectAttributes) {
 		try {
-			employeeDao.promoteToAdmin(employeeId);
-			redirectAttributes.addFlashAttribute("message", "Employee successfully promoted to admin");
-		} catch (RuntimeException e) {
-			redirectAttributes.addFlashAttribute("error", e.getMessage());
-		}
-		return new RedirectView(request.getContextPath() + "/listofemployees");
-	}
+			Employee employee = employeeDao.getEmployee(employeeId);
 
-	// logout
-	@GetMapping("/admin-logout")
-	public RedirectView adminLogout(HttpServletRequest request) {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
+			if (employee == null) {
+				redirectAttributes.addFlashAttribute("error", "Employee not found");
+				return new RedirectView(request.getContextPath() + "/listofemployees");
+			}
+
+			if (!employee.isActive()) {
+				redirectAttributes.addFlashAttribute("error", "Cannot promote inactive employee to admin");
+				return new RedirectView(request.getContextPath() + "/listofemployees");
+			}
+
+			if ("ADMIN".equals(employee.getRole())) {
+				redirectAttributes.addFlashAttribute("error", "Employee is already an admin");
+				return new RedirectView(request.getContextPath() + "/listofemployees");
+			}
+
+			employee.setRole("ADMIN");
+			employeeDao.updateEmployee(employee);
+
+			redirectAttributes.addFlashAttribute("message", "Employee successfully promoted to admin");
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "Failed to promote employee: " + e.getMessage());
 		}
-		return new RedirectView(request.getContextPath() + "/login?logout=true");
+
+		return new RedirectView(request.getContextPath() + "/listofemployees");
 	}
 
 }

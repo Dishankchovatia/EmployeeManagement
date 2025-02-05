@@ -8,7 +8,6 @@ import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import employeemanagement.model.Admin;
 import employeemanagement.model.Employee;
 import employeemanagement.model.Role;
 
@@ -18,8 +17,6 @@ public class EmployeeDao {
 	@Autowired
 	private HibernateTemplate hibernateTemplate;
 
-	@Autowired
-	private AdminDao adminDao;
 
 	// create new employee
 	@Transactional
@@ -112,6 +109,15 @@ public class EmployeeDao {
 			return session.createQuery(hql, Employee.class).setParameter("emailId", emailId).uniqueResult();
 		});
 	}
+	
+	public Employee findEmployeeByEmployeeId(String employeeId) {
+	    return hibernateTemplate.execute(session -> {
+	        String hql = "FROM Employee WHERE employeeId = :employeeId";
+	        return session.createQuery(hql, Employee.class)
+	                .setParameter("employeeId", employeeId)
+	                .uniqueResult();
+	    });
+	}
 
 	// status ? active : deactive;
 	@Transactional
@@ -129,28 +135,38 @@ public class EmployeeDao {
 	// promote to admin
 	@Transactional
 	public void promoteToAdmin(int employeeId) {
-		try {
-			Employee employee = getEmployee(employeeId);
-			if (employee != null) {
-				if (!employee.isActive()) {
-					throw new RuntimeException("Cannot promote inactive employee to admin");
-				}
-				if ("ADMIN".equals(employee.getRole())) {
-					throw new RuntimeException("Employee is already an admin");
-				}
-				employee.setRole("ADMIN");
-				hibernateTemplate.update(employee);
+	    try {
+	        Employee employee = getEmployee(employeeId);
+	        if (employee != null) {
+	            if (!employee.isActive()) {
+	                throw new RuntimeException("Cannot promote inactive employee to admin");
+	            }
+	            if ("ADMIN".equals(employee.getRole())) {
+	                throw new RuntimeException("Employee is already an admin");
+	            }
 
-				Admin admin = new Admin();
-				admin.setAdminId(employee.getEmailId());
-				admin.setAdminName(employee.getEmpName());
-				admin.setPassword(employee.getPassword());
-
-				adminDao.createAdmin(admin);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to promote employee to admin: " + e.getMessage());
-		}
+	            // Only change the role
+	            employee.setRole("ADMIN");
+	            hibernateTemplate.update(employee);
+	        } else {
+	            throw new RuntimeException("Employee not found");
+	        }
+	    } catch (Exception e) {
+	        throw new RuntimeException("Failed to promote employee to admin: " + e.getMessage());
+	    }
 	}
+
+
+	public boolean isEmployeeIdExists(String employeeId) {
+	    return hibernateTemplate.execute(session -> {
+	        Query query = session.createQuery("FROM Employee WHERE employeeId = :employeeId");
+	        query.setParameter("employeeId", employeeId);
+	        return query.list().isEmpty();
+	    });
+	}
+
+
+	
+	
 
 }

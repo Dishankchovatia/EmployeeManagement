@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import employeemanagement.dao.EmployeeDao;
-import employeemanagement.model.Admin;
 import employeemanagement.model.Employee;
 import employeemanagement.service.EmailService;
 
@@ -29,143 +28,69 @@ public class EmployeeController {
 	@Autowired
 	private EmailService emailService;
 
-	// signup Form
-	@RequestMapping("/signup")
-	public String addEmployee(Model m) {
-		m.addAttribute("title", "Add Employee");
-		return "employee-signup";
-	}
-
-	// login form
-	@RequestMapping("/signin")
-	public String signinForm() {
-		return "employee-signin";
-	}
-
-	// handle signin
-	@PostMapping("/handle-signin")
-	public RedirectView handleEmployeeLogin(@RequestParam String emailId, @RequestParam String password,
-			HttpServletRequest request, RedirectAttributes redirectAttributes) {
-		Employee employee = employeeDao.findEmployeeByEmail(emailId);
-		StringBuilder errorParam = new StringBuilder();
-
-		if (employee != null && passwordEncoder.matches(password, employee.getPassword())) {
-			if (!employee.isActive()) {
-				errorParam.append("deactivated,");
-			} else {
-				HttpSession session = request.getSession();
-				session.setAttribute("id", employee.getId());
-			}
-		} else {
-			errorParam.append("invalid,");
-		}
-
-		if (errorParam.length() > 0) {
-			String errorValue = errorParam.substring(0, errorParam.length() - 1);
-			return new RedirectView(request.getContextPath() + "/signin?error=" + errorValue);
-		}
-		return new RedirectView(request.getContextPath() + "/show/" + employee.getId());
-	}
-
-	// dashboard
-	@GetMapping("/employee-dashboard")
-	public String employeeDashboard(@ModelAttribute("employee") Employee employee, Model model) {
-		model.addAttribute("employee", employee);
-		return "employee-dashboard";
-	}
-
-	// handle signup
-	@RequestMapping(value = "/signup-employee", method = RequestMethod.POST)
-	public RedirectView handleEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
-			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
-
-		boolean emailExists = employeeDao.isEmailExists(employee.getEmailId());
-		boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber());
-
-		if (emailExists || mobileExists) {
-			model.addAttribute("errorEmail", emailExists ? "This email is already in use." : null);
-			model.addAttribute("errorMobile", mobileExists ? "This mobile number is already in use." : null);
-			return new RedirectView("employee-signup");
-		}
-
-		if (result.hasErrors()) {
-			redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
-			redirectAttributes.addFlashAttribute("employee", employee);
-			return new RedirectView("employee-signup");
-		}
-
-		String plainPassword = employee.getPassword();
-		String encryptedPassword = passwordEncoder.encode(employee.getPassword());
-		employee.setPassword(encryptedPassword);
-		
-		HttpSession session = request.getSession();
-		session.setAttribute("id", employee.getId());
-
-		employeeDao.createEmployee(employee);
-		emailService.sendCredentialEmail(employee, plainPassword);
-
-		redirectAttributes.addFlashAttribute("employee", employee);
-		RedirectView redirectView = new RedirectView();
-		redirectView.setUrl(request.getContextPath() + "/show/" + employee.getId());
-		return redirectView;
-	}
-
-	// Update Employee Form
-	@RequestMapping("/show/eupdate/{employeeId}")
+	@RequestMapping("/eupdate/{employeeId}")
 	public String updateForm(@PathVariable("employeeId") int eid, Model model) {
 		Employee employee = this.employeeDao.getEmployee(eid);
 		model.addAttribute("employee", employee);
 		return "eupdate_form";
 	}
 
-	@RequestMapping("/show/{eid}")
-	public String showDashboare(@PathVariable("eid") int eid, Model model) {
-		Employee employee = this.employeeDao.getEmployee(eid);
-		model.addAttribute("employee", employee);
-		return "employee-dashboard";
-	}
-
-	// Handle Update Employee Form
 	@RequestMapping(value = "/eupdate-employee", method = RequestMethod.POST)
 	public RedirectView updateEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
 			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
-		int eid = employee.getId();
-		Employee existingEmployee = employeeDao.getEmployee(eid);
 
-		boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
-				&& !employee.getEmailId().equals(existingEmployee.getEmailId());
-		boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
-				&& !employee.getEmpNumber().equals(existingEmployee.getEmpNumber());
+		HttpSession session = request.getSession();
 
-		if (emailExists || mobileExists) {
-			redirectAttributes.addFlashAttribute("errorEmail", "This email is already in use.");
-			redirectAttributes.addFlashAttribute("errorMobile", "This mobile number is already in use.");
-			return new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
+		String role = (String) session.getAttribute("role");
+		Integer loggedInUserId = (Integer) session.getAttribute("id");
 
+		if (role == null || loggedInUserId == null) {
+			redirectAttributes.addFlashAttribute("error", "You need to log in first.");
+			return new RedirectView(request.getContextPath() + "/login");
 		}
-		if (result.hasErrors()) {
-			redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
-			redirectAttributes.addFlashAttribute("employee", employee);
 
-			RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
-			return redirectView;
+		try {
+			Employee existingEmployee = employeeDao.getEmployee(employee.getId());
+			boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
+					&& !employee.getEmailId().equals(existingEmployee.getEmailId());
+			boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
+					&& !employee.getEmpNumber().equals(existingEmployee.getEmpNumber());
+
+			if (emailExists || mobileExists) {
+				if (emailExists) {
+					model.addAttribute("errorEmail", "This email is already in use.");
+				}
+				if (mobileExists) {
+					model.addAttribute("errorMobile", "This mobile number is already in use.");
+				}
+
+				RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
+				return redirectView;
+			}
+
+			if (result.hasErrors()) {
+				redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
+				redirectAttributes.addFlashAttribute("employee", employee);
+
+				RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
+				return redirectView;
+			}
+
+			employeeDao.updateEmployee(employee);
+
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", "The data was updated by another user. Please try again.");
+			return new RedirectView(request.getContextPath() + "/error");
 		}
-		employeeDao.updateEmployee(employee);
-		redirectAttributes.addFlashAttribute("successMessage", "Employee updated successfully.");
 
-		return new RedirectView(request.getContextPath() + "/show/" + eid);
-
+		return new RedirectView(request.getContextPath() + "/{loggedInUserId}");
 	}
 
-	// logout
-	@GetMapping("/employee-logout")
-	public RedirectView employeeLogout(HttpServletRequest request) {
-		// Invalidate the session
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
-		return new RedirectView(request.getContextPath() + "/signin?logout=true");
+	// dashboard
+	@RequestMapping("/{employeeId}")
+	public String showDashboare(@PathVariable("employeeId") int employeeId, Model model) {
+		Employee employee = this.employeeDao.getEmployee(employeeId);
+		model.addAttribute("employee", employee);
+		return "employee-dashboard";
 	}
-
 }

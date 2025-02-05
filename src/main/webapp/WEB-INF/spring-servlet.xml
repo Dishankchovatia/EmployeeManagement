@@ -58,7 +58,6 @@
 		<property name="annotatedClasses">
 			<list>
 				<value>employeemanagement.model.Employee</value>
-				<value>employeemanagement.model.Admin</value>
 			</list>
 		</property>
 	</bean>

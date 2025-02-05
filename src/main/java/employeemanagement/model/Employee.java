@@ -8,12 +8,16 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Entity
-@Table(name = "employeess")
+@Table(name = "employee")
 public class Employee {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
+
+	@NotBlank(message = "Employee ID cannot be blank")
+	@Column(name = "employee_id", unique = true, nullable = false)
+	private String employeeId;
 
 	@NotBlank(message = "Employee name cannot be blank")
 	@Column(name = "emp_name", nullable = false)
@@ -39,10 +43,10 @@ public class Employee {
 	private String doj;
 
 	@NotBlank(message = "Password cannot be blank")
-	@Size(min = 8, message = "Password must be at least 8 characters long")
+	@Size(min = 6, message = "Password must be at least 6 characters long")
 	@Column(name = "password", nullable = false)
 	private String password;
-	
+
 	@Column(name = "is_active", nullable = false)
 	private boolean isActive = true;
 
@@ -50,6 +54,7 @@ public class Employee {
 	private String role = "USER";
 
 	@Version
+	@Column(name = "version", nullable = false)
 	private int version;
 
 	public boolean isActive() {
@@ -74,6 +79,14 @@ public class Employee {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
 	}
 
 	public String getEmpName() {
@@ -143,26 +156,27 @@ public class Employee {
 	public Employee() {
 		super();
 	}
-
-	public Employee(int id, String empName, String empNumber, String emailId, String gender, String dob, String doj,
-			String password, int version) {
-		this.id = id;
-		this.empName = empName;
-		this.empNumber = empNumber;
-		this.emailId = emailId;
-		this.gender = gender;
-		this.dob = dob;
-		this.doj = doj;
-		this.password = password;
-		this.version = version;
-		this.isActive = true;
-		this.role = "USER";
+	
+	public Employee(int id, String empName, String empNumber, String emailId, String employeeId, String gender, String dob, String doj,
+	        String password, int version) {
+	    this.id = id;
+	    this.empName = empName;
+	    this.empNumber = empNumber;
+	    this.emailId = emailId;
+	    this.employeeId = employeeId;
+	    this.gender = gender;
+	    this.dob = dob;
+	    this.doj = doj;
+	    this.password = password;
+	    this.version = version;
+	    this.isActive = true;
+	    this.role = "USER";
 	}
-
+	
 	@Override
 	public String toString() {
-		return "Employee [id=" + id + ", empName=" + empName + ", empNumber=" + empNumber + ", emailId=" + emailId
-				+ ", gender=" + gender + ", dob=" + dob + ", doj=" + doj + ", password=" + password + ", isActive="
-				+ isActive + ", role=" + role + "]";
+		return "Employee [id=" + id + ", employeeId=" + employeeId + ", empName=" + empName + ", empNumber=" + empNumber
+				+ ", emailId=" + emailId + ", gender=" + gender + ", dob=" + dob + ", doj=" + doj + ", password="
+				+ password + ", isActive=" + isActive + ", role=" + role + ", version=" + version + "]";
 	}
 }

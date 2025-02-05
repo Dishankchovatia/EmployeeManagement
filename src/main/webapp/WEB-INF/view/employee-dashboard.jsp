@@ -136,7 +136,7 @@
 </head>
 <body>
   <!-- Logout Button -->
-  <a href="${pageContext.request.contextPath}/employee-logout" class="btn-logout">
+  <a href="${pageContext.request.contextPath}/logout" class="btn-logout">
     <i class="fas fa-sign-out-alt"></i> Logout
   </a>
   
@@ -148,7 +148,7 @@
     </div>
     <div class="employee-details">
       <p><span class="label">Name:</span> ${employee.empName}</p>
-      <p><span class="label">EmpID:</span> EMP00${employee.id}</p>
+      <p><span class="label">EmpID:</span> ${employee.employeeId}</p>
       <p><span class="label">Mobile:</span> ${employee.empNumber}</p>
       <p><span class="label">Email:</span> ${employee.emailId}</p>
       <p><span class="label">Gender:</span> ${employee.gender}</p>

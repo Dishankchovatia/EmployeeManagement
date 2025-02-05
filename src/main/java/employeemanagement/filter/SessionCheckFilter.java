@@ -21,13 +21,12 @@ public class SessionCheckFilter implements Filter {
 
 		// URLs that don't need authentication
 		boolean isPublicPage = requestURI.equals(contextPath + "/") || 
-				requestURI.endsWith("/login") || requestURI.endsWith("/signin")
-				|| requestURI.equals(contextPath + "/index") || requestURI.contains("/signup"); 
+				requestURI.endsWith("/login")
+				|| requestURI.equals(contextPath + "/index"); 
 
 		boolean isPublicResource = requestURI.contains("/resources/") || requestURI.contains("/css/")
 				|| requestURI.contains("/js/") || requestURI.contains("/images/")
-				|| requestURI.contains("/handle-login") || requestURI.contains("/handle-signin")|| requestURI.contains("/signup-employee");
-
+				|| requestURI.contains("/handle-login") ;
 		if (isPublicPage || isPublicResource) {
 			chain.doFilter(request, response);
 			return;
