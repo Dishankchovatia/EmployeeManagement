@@ -26,7 +26,6 @@ public class AuthController {
 
 	@GetMapping("/login")
 	public String showLoginPage() {
-		System.out.println(passwordEncoder.encode("#EMP001"));
 		return "login";
 	}
 

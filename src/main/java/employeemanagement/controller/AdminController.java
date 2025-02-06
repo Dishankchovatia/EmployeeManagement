@@ -40,8 +40,6 @@ public class AdminController {
 
 	@GetMapping("/dashboard")
 	public String adminDashboard(Model model, String employeeId) {
-		Employee employee = employeeDao.findEmployeeByEmployeeId(employeeId);
-		model.addAttribute("employee", employee);
 		return "admin-dashboard";
 	}
 

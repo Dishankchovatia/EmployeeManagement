@@ -201,7 +201,7 @@ public class ExcelHelper {
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet("Employees");
 			Row headerRow = sheet.createRow(0);
-			String[] columns = { "ID", "Name", "EmployeeID", "Mobile No", "Email", "Gender", "DOB", "DOJ", "PASSWORD" };
+			String[] columns = { "ID", "Name", "EmployeeID", "Mobile No", "Email", "Gender", "DOB", "DOJ" };
 
 			for (int i = 0; i < columns.length; i++) {
 				Cell cell = headerRow.createCell(i);
@@ -220,7 +220,6 @@ public class ExcelHelper {
 				row.createCell(5).setCellValue(emp.getGender());
 				row.createCell(6).setCellValue(emp.getDob().toString());
 				row.createCell(7).setCellValue(emp.getDoj().toString());
-				row.createCell(8).setCellValue(emp.getPassword().toString());
 			}
 
 			workbook.write(response.getOutputStream());
