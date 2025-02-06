@@ -49,6 +49,41 @@ public class AdminController {
 		m.addAttribute("title", "Add Employee");
 		return "add_employee_form";
 	}
+	
+	@RequestMapping(value = "/handle-employee", method = RequestMethod.POST)
+	public RedirectView handleEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
+			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
+
+		boolean emailExists = employeeDao.isEmailExists(employee.getEmailId());
+		boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber());
+
+		if (emailExists || mobileExists) {
+			model.addAttribute("errorEmail", emailExists ? "This email is already in use." : null);
+			model.addAttribute("errorMobile", mobileExists ? "This mobile number is already in use." : null);
+			return new RedirectView("add-employee");
+		}
+
+		// Validate form inputs
+		if (result.hasErrors()) {
+			redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
+			redirectAttributes.addFlashAttribute("employee", employee);
+			return new RedirectView("add-employee");
+		}
+
+		String plainPassword = employee.getPassword();
+		// Encrypt password
+		String encryptedPassword = passwordEncoder.encode(employee.getPassword());
+		employee.setPassword(encryptedPassword);
+
+		employeeDao.createEmployee(employee);
+		emailService.sendCredentialEmail(employee, plainPassword);
+
+		RedirectView redirectView = new RedirectView();
+		redirectView.setUrl(request.getContextPath() + "/listofemployees");
+		return redirectView;
+	}
+
+	
 
 	// Update Employee Form
 	@RequestMapping("/update/{employeeId}")

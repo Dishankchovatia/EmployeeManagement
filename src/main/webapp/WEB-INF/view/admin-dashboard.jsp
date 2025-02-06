@@ -8,183 +8,192 @@
     <title>Employee Management System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --success: #059669;
-            --success-dark: #047857;
-            --danger: #dc2626;
-            --danger-dark: #b91c1c;
-        }
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+        --success: #059669;
+        --success-dark: #047857;
+        --danger: #dc2626;
+        --danger-dark: #b91c1c;
+    }
 
-        body {
-            min-height: 100vh;
-            background: #f8fafc;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
+    body {
+        min-height: 100vh;
+        background: #f8fafc;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
 
-        .dashboard-container {
-            min-height: 100vh;
-            background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
-                        radial-gradient(circle at bottom left, rgba(5, 150, 105, 0.15) 0%, transparent 40%);
-            padding: 2rem 1rem;
-        }
+    .dashboard-container {
+        min-height: 100vh;
+        background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(5, 150, 105, 0.15) 0%, transparent 40%);
+        padding: 2rem 1rem;
+    }
 
+    .header {
+        position: relative;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        margin-bottom: 2rem;
+    }
+
+    .welcome-text {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(to right, var(--primary), var(--success));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        max-width: 600px;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, var(--primary), var(--success));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+
+    .card-description {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-add, .btn-list, .btn-manage {
+        color: white;
+        border: none;
+        width: 100%;
+    }
+
+    .btn-add {
+        background: var(--success);
+    }
+
+    .btn-add:hover {
+        background: var(--success-dark);
+        color: white;
+    }
+
+    .btn-list {
+        background: var(--primary);
+    }
+
+    .btn-list:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-manage {
+        background: var(--primary);
+    }
+
+    .btn-manage:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-logout {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        background: white;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-logout:hover {
+        background: var(--danger);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
         .header {
-            position: relative;
-            padding: 2rem;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            margin-bottom: 2rem;
+            text-align: center;
+            padding: 1.5rem;
         }
 
         .welcome-text {
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, var(--primary), var(--success));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            color: #64748b;
-            font-size: 1.1rem;
-            max-width: 600px;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            padding: 1rem;
-        }
-
-        .action-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .action-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--success));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        .action-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1rem;
-        }
-
-        .card-description {
-            color: #64748b;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-add {
-            background: var(--success);
-            color: white;
-            border: none;
-            width: 100%;
-        }
-
-        .btn-add:hover {
-            background: var(--success-dark);
-            color: white;
-        }
-
-        .btn-list {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-        }
-
-        .btn-list:hover {
-            background: var(--primary-dark);
-            color: white;
+            font-size: 1.875rem;
         }
 
         .btn-logout {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: white;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 0.5rem 1rem;
+            position: static;
+            margin-top: 1rem;
         }
 
-        .btn-logout:hover {
-            background: var(--danger);
-            color: white;
+        .card-grid {
+            grid-template-columns: 1fr;
         }
-
-        @media (max-width: 768px) {
-            .header {
-                text-align: center;
-                padding: 1.5rem;
-            }
-
-            .welcome-text {
-                font-size: 1.875rem;
-            }
-
-            .btn-logout {
-                position: static;
-                margin-top: 1rem;
-            }
-
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -236,6 +245,23 @@
                         View All Employees
                     </a>
                 </div>
+                
+               <div class="card-grid">
+				    <div class="action-card">
+				        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+				        </svg>
+				        <h3 class="card-title">Leave Master</h3>
+				        <p class="card-description">Manage and track employee leave records, approvals, and balances efficiently.</p>
+				        <a href="admin/pending-leaves" class="btn btn-manage">
+				            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				                <path d="M4 6h16M4 12h16m-7 6h7"/>
+				            </svg>
+				            Manage Leaves
+				        </a>
+				    </div>
+				</div>
+
             </div>
         </div>
     </div>

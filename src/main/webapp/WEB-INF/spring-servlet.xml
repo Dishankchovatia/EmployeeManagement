@@ -58,6 +58,7 @@
 		<property name="annotatedClasses">
 			<list>
 				<value>employeemanagement.model.Employee</value>
+				<value>employeemanagement.model.Leave</value>
 			</list>
 		</property>
 	</bean>

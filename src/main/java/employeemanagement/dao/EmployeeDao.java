@@ -2,9 +2,12 @@ package employeemanagement.dao;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -164,9 +167,5 @@ public class EmployeeDao {
 	        return query.list().isEmpty();
 	    });
 	}
-
-
-	
-	
 
 }
