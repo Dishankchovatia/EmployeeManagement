@@ -84,7 +84,7 @@ public class LeaveController {
     }
     
     @PostMapping("/admin/process-leave/{id}")
-    @ResponseBody // Add this annotation
+    @ResponseBody 
     public Map<String, String> processLeave(
             @PathVariable int id,
             @RequestParam LeaveStatus status,
@@ -112,6 +112,66 @@ public class LeaveController {
         }
         
         return response;
+    }
+    
+    @GetMapping("/admin/leave-report")
+    public String showLeaveReportForm(Model model) {
+        List<Employee> employees = employeeDao.getEmployees();
+        model.addAttribute("employees", employees);
+        return "admin/leave_report_form";
+    }
+
+    @GetMapping("/admin/generate-leave-report")
+    public String generateLeaveReport(
+            @RequestParam("employeeId") int employeeId,
+            @RequestParam(value = "startDate", required = false) Date startDate,
+            @RequestParam(value = "endDate", required = false) Date endDate,
+            Model model) {
+        
+        Employee employee = employeeDao.getEmployee(employeeId);
+        if (employee == null) {
+            return "redirect:/admin/leave-report";
+        }
+
+        List<Leave> leaves;
+        if (startDate != null && endDate != null) {
+            leaves = leaveDao.getEmployeeLeavesByDateRange(employeeId, startDate, endDate);
+        } else {
+            leaves = leaveDao.getEmployeeLeaves(employeeId);
+        }
+
+        int approvedLeaves = 0;
+        int rejectedLeaves = 0;
+        int pendingLeaves = 0;
+        int totalDays = 0;
+
+        for (Leave leave : leaves) {
+            switch (leave.getStatus()) {
+                case APPROVED:
+                    approvedLeaves++;
+                    break;
+                case REJECTED:
+                    rejectedLeaves++;
+                    break;
+                case PENDING:
+                    pendingLeaves++;
+                    break;
+            }
+          
+            long diff = leave.getEndDate().getTime() - leave.getStartDate().getTime();
+            totalDays += (diff / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+        model.addAttribute("employee", employee);
+        model.addAttribute("leaves", leaves);
+        model.addAttribute("approvedLeaves", approvedLeaves);
+        model.addAttribute("rejectedLeaves", rejectedLeaves);
+        model.addAttribute("pendingLeaves", pendingLeaves);
+        model.addAttribute("totalDays", totalDays);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        
+        return "admin/leave_report";
     }
     
 

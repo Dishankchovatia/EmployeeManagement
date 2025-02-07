@@ -116,6 +116,10 @@
                     <h3>Resource Planning</h3>
                     <p>Optimize resource allocation and workforce scheduling</p>
                 </div>
+                <div class="feature-card">
+                    <h3>Leave Master</h3>
+                    <p>Approve and Reject leaves of employees and track reacords</p>
+                </div>
             </div>
         </div>
     </div>

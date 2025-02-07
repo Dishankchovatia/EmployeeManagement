@@ -68,11 +68,9 @@ public class ExcelHelper {
 					int id = (int) row.getCell(0).getNumericCellValue();
 					String name = getCellValueAsString(row.getCell(1));
 					String employeeId = getCellValueAsString(row.getCell(2));
-
 					Cell mobileCell = row.getCell(3);
 					String mobile;
 					if (mobileCell.getCellType() == CellType.NUMERIC) {
-
 						mobile = String.format("%.0f", mobileCell.getNumericCellValue());
 					} else {
 						mobile = mobileCell.getStringCellValue();
@@ -177,9 +175,9 @@ public class ExcelHelper {
 			return cell.getStringCellValue();
 		case NUMERIC:
 			if (DateUtil.isCellDateFormatted(cell)) {
-				return cell.getDateCellValue().toString(); // Handle date cells
+				return cell.getDateCellValue().toString(); 
 			} else {
-				return String.valueOf((int) cell.getNumericCellValue()); // Handle numeric cells
+				return String.valueOf((int) cell.getNumericCellValue());
 			}
 		case BOOLEAN:
 			return String.valueOf(cell.getBooleanCellValue());

@@ -199,7 +199,7 @@
     <div class="dashboard-container">
         <div class="container">
             <div class="header">
-                <h1 class="welcome-text">Welcome ${employee.empName}!</h1>
+                <h1 class="welcome-text">Welcome ${empName}!</h1>
                 <p class="subtitle">Streamline your workforce management with our intuitive system</p>
                 <a href="${pageContext.request.contextPath}/logout" class="btn btn-logout">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

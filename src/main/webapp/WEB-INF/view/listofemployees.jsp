@@ -409,13 +409,11 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Trigger hidden file input when "Import" link is clicked
         document.getElementById('importLink').addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('hiddenFile').click();
         });
 
-        // Automatically submit the form when a file is selected
         document.getElementById('hiddenFile').addEventListener('change', function() {
             document.getElementById('importForm').submit();
         });

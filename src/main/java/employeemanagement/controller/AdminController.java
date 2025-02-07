@@ -39,7 +39,9 @@ public class AdminController {
 	private EmailService emailService;
 
 	@GetMapping("/dashboard")
-	public String adminDashboard(Model model, String employeeId) {
+	public String adminDashboard(Model model, HttpSession session) {
+		String empName = (String) session.getAttribute("name");
+		model.addAttribute("empName", empName);
 		return "admin-dashboard";
 	}
 
@@ -49,7 +51,7 @@ public class AdminController {
 		m.addAttribute("title", "Add Employee");
 		return "add_employee_form";
 	}
-	
+
 	@RequestMapping(value = "/handle-employee", method = RequestMethod.POST)
 	public RedirectView handleEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
 			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
@@ -71,7 +73,6 @@ public class AdminController {
 		}
 
 		String plainPassword = employee.getPassword();
-		// Encrypt password
 		String encryptedPassword = passwordEncoder.encode(employee.getPassword());
 		employee.setPassword(encryptedPassword);
 
@@ -82,8 +83,6 @@ public class AdminController {
 		redirectView.setUrl(request.getContextPath() + "/listofemployees");
 		return redirectView;
 	}
-
-	
 
 	// Update Employee Form
 	@RequestMapping("/update/{employeeId}")

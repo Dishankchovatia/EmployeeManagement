@@ -147,8 +147,6 @@ public class EmployeeDao {
 	            if ("ADMIN".equals(employee.getRole())) {
 	                throw new RuntimeException("Employee is already an admin");
 	            }
-
-	            // Only change the role
 	            employee.setRole("ADMIN");
 	            hibernateTemplate.update(employee);
 	        } else {

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -43,4 +45,22 @@ public class LeaveDao {
             return session.createQuery(hql, Leave.class).list();
         });
     }
+    
+    @Transactional(readOnly = true)
+    public List<Leave> getEmployeeLeavesByDateRange(int employeeId, Date startDate, Date endDate) {
+        String hql = "FROM Leave l WHERE l.employee.id = :employeeId " +
+                    "AND ((l.startDate BETWEEN :startDate AND :endDate) " +
+                    "OR (l.endDate BETWEEN :startDate AND :endDate) " +
+                    "OR (l.startDate <= :startDate AND l.endDate >= :endDate)) " +
+                    "ORDER BY l.startDate DESC";
+
+        return (List<Leave>) hibernateTemplate.execute(hbsession -> {
+            return hbsession.createQuery(hql)
+                    .setParameter("employeeId", employeeId)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .list();
+        });
+    }
+    
 }

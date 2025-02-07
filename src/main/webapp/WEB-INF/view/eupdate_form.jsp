@@ -343,7 +343,7 @@
                         <button type="submit" class="btn btn-primary">
                                 Update Details
                             </button>
-                            <a href="${pageContext.request.contextPath}/show/${employee.id}"
+                            <a href="${pageContext.request.contextPath}/${employee.id}"
                                class="btn btn-outline-danger">Cancel</a>
                             
                         </div>
