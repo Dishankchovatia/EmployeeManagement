@@ -1,10 +1,21 @@
 package employeemanagement.controller;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,11 +30,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import employeemanagement.dao.EmployeeDao;
+import employeemanagement.dao.LeaveDao;
 import employeemanagement.model.Employee;
+import employeemanagement.model.Leave;
+import employeemanagement.model.LeaveStatus;
 import employeemanagement.service.EmailService;
 
 @Controller
@@ -31,6 +46,9 @@ public class AdminController {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private LeaveDao leaveDao;
 
 	@Autowired
 	private EmployeeDao employeeDao;
@@ -110,6 +128,9 @@ public class AdminController {
 		try {
 
 			Employee existingEmployee = employeeDao.getEmployee(employee.getId());
+			if (existingEmployee != null) {
+			    employee.setVersion(existingEmployee.getVersion()); 
+			}
 
 			boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
 					&& !employee.getEmailId().equals(existingEmployee.getEmailId());
@@ -132,7 +153,6 @@ public class AdminController {
 				redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
 				redirectAttributes.addFlashAttribute("employee", employee);
 
-				// Redirect back to the update page with the validation errors
 				RedirectView redirectView = new RedirectView(request.getContextPath() + "/update/" + employee.getId());
 				return redirectView;
 			}
@@ -192,6 +212,93 @@ public class AdminController {
 		}
 
 		return new RedirectView(request.getContextPath() + "/listofemployees");
+	}
+	
+	@PostMapping("/update-salary/{id}")
+	public RedirectView updateSalary(@PathVariable("id") int employeeId,
+	                                @RequestParam BigDecimal salary,
+	                                HttpServletRequest request,
+	                                RedirectAttributes redirectAttributes) {
+	    try {
+	        Employee employee = employeeDao.getEmployee(employeeId);
+	        
+	        if (employee == null) {
+	            redirectAttributes.addFlashAttribute("error", "Employee not found");
+	            return new RedirectView(request.getContextPath() + "/listofemployees");
+	        }
+
+	        employee.setSalary(salary);
+	        employeeDao.updateEmployee(employee);
+	        
+	        redirectAttributes.addFlashAttribute("message", "Salary updated successfully");
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("error", "Failed to update salary: " + e.getMessage());
+	    }
+	    
+	    return new RedirectView(request.getContextPath() + "/listofemployees");
+	}
+	
+	@GetMapping("/calculate-salary/{id}")
+	@ResponseBody
+	public Map<String, Object> calculateSalary(@PathVariable("id") int employeeId,
+	                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM") String monthYear) {
+	    Map<String, Object> response = new HashMap<>();
+	    try {
+	        Employee employee = employeeDao.getEmployee(employeeId);
+	        if (employee.getSalary() == null) {
+	            response.put("error", "Salary not set for employee");
+	            return response;
+	        }
+
+	        // Parse month and year
+	        YearMonth ym = YearMonth.parse(monthYear);
+	        Date startDate = Date.from(ym.atDay(1)
+	                .atStartOfDay(ZoneId.systemDefault())
+	                .toInstant());
+	        Date endDate = Date.from(ym.atEndOfMonth()
+	                .atTime(23, 59, 59)
+	                .atZone(ZoneId.systemDefault())
+	                .toInstant());
+
+	        // Get approved leaves for the month
+	        List<Leave> monthlyLeaves = leaveDao.getEmployeeLeavesByDateRange(employeeId, startDate, endDate);
+	        
+	        int leaveDays = 0;
+	        for (Leave leave : monthlyLeaves) {
+	            if (leave.getStatus() == LeaveStatus.APPROVED) {
+	                long days = ChronoUnit.DAYS.between(
+	                    leave.getStartDate().toInstant(),
+	                    leave.getEndDate().toInstant()
+	                ) + 1;
+	                leaveDays += days;
+	            }
+	        }
+
+	        // Calculate daily wage
+	        BigDecimal dailyWage = employee.getSalary()
+	                .divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
+	        
+	        BigDecimal finalSalary = employee.getSalary();
+	        
+	        // Apply deduction if leaves > 3
+	        if (leaveDays > 3) {
+	            int excessLeaves = leaveDays - 3;
+	            BigDecimal deduction = dailyWage
+	                    .multiply(BigDecimal.valueOf(0.4))
+	                    .multiply(BigDecimal.valueOf(excessLeaves));
+	            finalSalary = employee.getSalary().subtract(deduction);
+	        }
+
+	        response.put("baseSalary", employee.getSalary());
+	        response.put("leaveDays", leaveDays);
+	        response.put("finalSalary", finalSalary);
+	        response.put("monthYear", monthYear);
+	        
+	    } catch (Exception e) {
+	        response.put("error", "Error calculating salary: " + e.getMessage());
+	    }
+	    
+	    return response;
 	}
 
 }

@@ -285,13 +285,15 @@
                                    value="${employee.empName}" required />
                                    <form:errors path="empName" cssClass="error text-danger" />
                         </div>
-                        <div class="form-group">
+                        <%-- <div class="form-group">
                             <label for="employeeId">Employee ID</label>
                             <input type="text" class="form-control" id="employeeId"
                                    name="employeeId" placeholder="Enter employee ID"
                                    value="${employee.employeeId}" required />
                                    <form:errors path="employeeId" cssClass="error text-danger" />
-                        </div>
+                        </div> --%>
+                        
+                        <input type="hidden" name="employeeId" value="${employee.employeeId}" />
 
                         <div class="form-group">
                             <label for="empNumber">Mobile Number</label>
@@ -312,6 +314,7 @@
                         </div>
                         
 						<input type="hidden" name="password" value="${employee.password}" />
+						<input type="hidden" name="salary" value="${employee.salary}" />
 
                         <div class="gender-section">
                             <span>Gender</span>

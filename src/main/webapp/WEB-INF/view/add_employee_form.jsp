@@ -256,6 +256,14 @@ to {
 							<form:errors path="employeeId" cssClass="error text-danger" />
 							
 						</div>
+						
+						<div class="form-group">
+							<label for="salary">Salary</label> <input type="text"
+								class="form-control" id="salary" name="salary"
+								placeholder="Enter salary" required value="${employee.salary }"/>
+							<form:errors path="salary" cssClass="error text-danger" />
+							
+						</div>
 
 						<div class="form-group">
 							<label for="empNumber">Mobile Number</label> <input type="tel"

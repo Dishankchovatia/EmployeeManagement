@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -237,6 +238,10 @@
                     <div class="detail-label">Date of Joining</div>
                     <div class="detail-value">${employee.doj}</div>
                 </div>
+                <div class="detail-item">
+                    <div class="detail-label">Salary</div>
+                    <div class="detail-value">${employee.salary}</div>
+                </div>
             </div>
 
             <a href="eupdate/${employee.id}" class="btn btn-update">
@@ -246,3 +251,85 @@
     </div>
 </body>
 </html>
+
+<%-- 
+<!-- Add this section in employee-dashboard.jsp -->
+				<div class="card mt-4">
+					<div class="card-header">
+						<h4>Salary Information</h4>
+					</div>
+					<div class="card-body">
+						<c:if test="${employee.salary != null}">
+							<div class="row">
+								<div class="col-md-6">
+									<h5>
+										Base Salary: ₹
+										<fmt:formatNumber value="${employee.salary}"
+											pattern="#,##0.00" />
+									</h5>
+								</div>
+								<div class="col-md-6">
+									<form id="calculateSalaryForm">
+										<div class="input-group">
+											<input type="month" class="form-control" id="monthYear"
+												required>
+											<button type="button" class="btn btn-primary"
+												onclick="calculateSalary()">Calculate Monthly
+												Salary</button>
+										</div>
+									</form>
+								</div>
+							</div>
+
+							<div id="salaryCalculation" class="mt-3" style="display: none;">
+								<!-- Results will be shown here -->
+							</div>
+						</c:if>
+						<c:if test="${employee.salary == null}">
+							<p class="text-muted">Salary not set</p>
+						</c:if>
+					</div>
+				</div>
+
+				<script>
+function calculateSalary() {
+    const monthYear = document.getElementById('monthYear').value;
+    if (!monthYear) return;
+
+    fetch(`${pageContext.request.contextPath}/admin/calculate-salary/${employee.id}?monthYear=${monthYear}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            const result = document.getElementById('salaryCalculation');
+            result.innerHTML = `
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Month/Year</th>
+                        <td>${data.monthYear}</td>
+                    </tr>
+                    <tr>
+                        <th>Base Salary</th>
+                        <td>₹${data.baseSalary.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <th>Leave Days</th>
+                        <td>${data.leaveDays}</td>
+                    </tr>
+                    <tr>
+                        <th>Final Salary</th>
+                        <td>₹${data.finalSalary.toFixed(2)}</td>
+                    </tr>
+                </table>
+            `;
+            result.style.display = 'block';
+        })
+        .catch(error => {
+            alert('Error calculating salary: ' + error);
+        });
+}
+</script>
+ --%>

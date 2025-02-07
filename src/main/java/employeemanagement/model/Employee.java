@@ -1,5 +1,7 @@
 package employeemanagement.model;
 
+import java.math.BigDecimal;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -56,6 +58,17 @@ public class Employee {
 	@Version
 	@Column(name = "version", nullable = false)
 	private int version;
+
+	@Column(name = "salary")
+	private BigDecimal salary;
+
+	public BigDecimal getSalary() {
+		return salary;
+	}
+
+	public void setSalary(BigDecimal salary) {
+		this.salary = salary;
+	}
 
 	public boolean isActive() {
 		return isActive;
@@ -156,27 +169,38 @@ public class Employee {
 	public Employee() {
 		super();
 	}
-	
-	public Employee(int id, String empName, String empNumber, String emailId, String employeeId, String gender, String dob, String doj,
-	        String password, int version) {
-	    this.id = id;
-	    this.empName = empName;
-	    this.empNumber = empNumber;
-	    this.emailId = emailId;
-	    this.employeeId = employeeId;
-	    this.gender = gender;
-	    this.dob = dob;
-	    this.doj = doj;
-	    this.password = password;
-	    this.version = version;
-	    this.isActive = true;
-	    this.role = "USER";
+
+	public Employee(int id, @NotBlank(message = "Employee ID cannot be blank") String employeeId,
+			@NotBlank(message = "Employee name cannot be blank") String empName,
+			@NotBlank(message = "Employee number cannot be blank") @Pattern(regexp = "^[0-9]{10}$", message = "Employee number must be a 10-digit number") String empNumber,
+			@NotBlank(message = "Email cannot be blank") @Email(message = "Invalid email format") String emailId,
+			@NotBlank(message = "Gender cannot be blank") String gender,
+			@NotNull(message = "Date of birth cannot be null") String dob,
+			@NotNull(message = "Date of joining cannot be null") String doj,
+			@NotBlank(message = "Password cannot be blank") @Size(min = 6, message = "Password must be at least 6 characters long") String password,
+			boolean isActive, String role, int version, BigDecimal salary) {
+		super();
+		this.id = id;
+		this.employeeId = employeeId;
+		this.empName = empName;
+		this.empNumber = empNumber;
+		this.emailId = emailId;
+		this.gender = gender;
+		this.dob = dob;
+		this.doj = doj;
+		this.password = password;
+		this.isActive = isActive;
+		this.role = role;
+		this.version = version;
+		this.salary = salary;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Employee [id=" + id + ", employeeId=" + employeeId + ", empName=" + empName + ", empNumber=" + empNumber
 				+ ", emailId=" + emailId + ", gender=" + gender + ", dob=" + dob + ", doj=" + doj + ", password="
-				+ password + ", isActive=" + isActive + ", role=" + role + ", version=" + version + "]";
+				+ password + ", isActive=" + isActive + ", role=" + role + ", version=" + version + ", salary=" + salary
+				+ "]";
 	}
+
 }

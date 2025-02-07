@@ -2,6 +2,7 @@ package employeemanagement.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,18 +69,19 @@ public class ExcelHelper {
 					int id = (int) row.getCell(0).getNumericCellValue();
 					String name = getCellValueAsString(row.getCell(1));
 					String employeeId = getCellValueAsString(row.getCell(2));
-					Cell mobileCell = row.getCell(3);
+					String salary = getCellValueAsString(row.getCell(3));
+					Cell mobileCell = row.getCell(4);
 					String mobile;
 					if (mobileCell.getCellType() == CellType.NUMERIC) {
 						mobile = String.format("%.0f", mobileCell.getNumericCellValue());
 					} else {
 						mobile = mobileCell.getStringCellValue();
 					}
-					String email = getCellValueAsString(row.getCell(4));
-					String gender = getCellValueAsString(row.getCell(5));
-					String dob = getCellValueAsString(row.getCell(6));
-					String doj = getCellValueAsString(row.getCell(7));
-					String plainPassword = getCellValueAsString(row.getCell(8));
+					String email = getCellValueAsString(row.getCell(5));
+					String gender = getCellValueAsString(row.getCell(6));
+					String dob = getCellValueAsString(row.getCell(7));
+					String doj = getCellValueAsString(row.getCell(8));
+					String plainPassword = getCellValueAsString(row.getCell(9));
 
 					Employee existingEmployeeByEmail = employeeDao.findEmployeeByEmail(email);
 					boolean isMobileExists = employeeDao.isMobileNumberExists(mobile);
@@ -101,6 +103,10 @@ public class ExcelHelper {
 
 						existingEmployee.setEmpName(name);
 						existingEmployee.setEmployeeId(employeeId);
+				
+						BigDecimal salary1 = new BigDecimal(salary);
+						existingEmployee.setSalary(salary1); 
+
 						existingEmployee.setEmpNumber(mobile);
 						existingEmployee.setEmailId(email);
 						existingEmployee.setGender(gender);
@@ -124,6 +130,10 @@ public class ExcelHelper {
 						newEmployee.setId(id);
 						newEmployee.setEmpName(name);
 						newEmployee.setEmployeeId(employeeId);
+						
+						BigDecimal salary1 = new BigDecimal(salary);
+						newEmployee.setSalary(salary1);
+						
 						newEmployee.setEmpNumber(mobile);
 						newEmployee.setEmailId(email);
 						newEmployee.setGender(gender);
@@ -199,7 +209,7 @@ public class ExcelHelper {
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet("Employees");
 			Row headerRow = sheet.createRow(0);
-			String[] columns = { "ID", "Name", "EmployeeID", "Mobile No", "Email", "Gender", "DOB", "DOJ" };
+			String[] columns = { "ID", "Name", "EmployeeID", "Salary", "Mobile No", "Email", "Gender", "DOB", "DOJ" };
 
 			for (int i = 0; i < columns.length; i++) {
 				Cell cell = headerRow.createCell(i);
@@ -213,11 +223,12 @@ public class ExcelHelper {
 				row.createCell(0).setCellValue(emp.getId());
 				row.createCell(1).setCellValue(emp.getEmpName());
 				row.createCell(2).setCellValue(emp.getEmployeeId());
-				row.createCell(3).setCellValue(emp.getEmpNumber());
-				row.createCell(4).setCellValue(emp.getEmailId());
-				row.createCell(5).setCellValue(emp.getGender());
-				row.createCell(6).setCellValue(emp.getDob().toString());
-				row.createCell(7).setCellValue(emp.getDoj().toString());
+				row.createCell(3).setCellValue(emp.getSalary().doubleValue());
+				row.createCell(4).setCellValue(emp.getEmpNumber());
+				row.createCell(5).setCellValue(emp.getEmailId());
+				row.createCell(6).setCellValue(emp.getGender());
+				row.createCell(7).setCellValue(emp.getDob().toString());
+				row.createCell(8).setCellValue(emp.getDoj().toString());
 			}
 
 			workbook.write(response.getOutputStream());

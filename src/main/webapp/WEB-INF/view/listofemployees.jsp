@@ -323,6 +323,7 @@
                                 <!-- <th><i class="fas fa-id-card me-2"></i>ID</th> -->
                                 <th><i class="fas fa-id-card me-2"></i>EMPID</th>
                                 <th><i class="fas fa-user me-2"></i>Name</th>
+                                <th><i class="fas fa-cogs me-2"></i>Salary</th>
                                 <th><i class="fas fa-phone me-2"></i>Mobile No.</th>
                                 <th><i class="fas fa-envelope me-2"></i>Email Id</th>
                                 <th><i class="fas fa-venus-mars me-2"></i>Gender</th>
@@ -338,6 +339,7 @@
                                     <%-- <td class="employee-id">${e.id}</td> --%>
                                     <td>${e.employeeId}</td>
                                     <td>${e.empName}</td>
+                                    <td>${e.salary}</td>
                                     <td>${e.empNumber}</td>
                                     <td>${e.emailId}</td>
                                     <td>${e.gender}</td>

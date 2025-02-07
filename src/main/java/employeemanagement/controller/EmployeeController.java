@@ -28,19 +28,11 @@ public class EmployeeController {
 	@Autowired
 	private EmailService emailService;
 
-	@RequestMapping("/eupdate/{employeeId}")
-	public String updateForm(@PathVariable("employeeId") int eid, Model model) {
-		Employee employee = this.employeeDao.getEmployee(eid);
-		model.addAttribute("employee", employee);
-		return "eupdate_form";
-	}
-
 	@RequestMapping(value = "/eupdate-employee", method = RequestMethod.POST)
 	public RedirectView updateEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
 			HttpServletRequest request, RedirectAttributes redirectAttributes, Model model) {
 
 		HttpSession session = request.getSession();
-
 		String role = (String) session.getAttribute("role");
 		Integer loggedInUserId = (Integer) session.getAttribute("id");
 
@@ -51,6 +43,10 @@ public class EmployeeController {
 
 		try {
 			Employee existingEmployee = employeeDao.getEmployee(employee.getId());
+			if (existingEmployee != null) {
+				employee.setVersion(existingEmployee.getVersion());
+			}
+
 			boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
 					&& !employee.getEmailId().equals(existingEmployee.getEmailId());
 			boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
@@ -64,16 +60,13 @@ public class EmployeeController {
 					model.addAttribute("errorMobile", "This mobile number is already in use.");
 				}
 
-				RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
-				return redirectView;
+				return new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
 			}
 
 			if (result.hasErrors()) {
 				redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
 				redirectAttributes.addFlashAttribute("employee", employee);
-
-				RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
-				return redirectView;
+				return new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
 			}
 
 			employeeDao.updateEmployee(employee);
@@ -82,8 +75,14 @@ public class EmployeeController {
 			redirectAttributes.addFlashAttribute("error", "The data was updated by another user. Please try again.");
 			return new RedirectView(request.getContextPath() + "/error");
 		}
+		return new RedirectView(request.getContextPath() + "/" + loggedInUserId);
+	}
 
-		return new RedirectView(request.getContextPath() + "/{loggedInUserId}");
+	@RequestMapping("/eupdate/{employeeId}")
+	public String updateForm(@PathVariable("employeeId") int eid, Model model) {
+		Employee employee = this.employeeDao.getEmployee(eid);
+		model.addAttribute("employee", employee);
+		return "eupdate_form";
 	}
 
 	// dashboard
