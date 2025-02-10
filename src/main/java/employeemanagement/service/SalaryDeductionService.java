@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class SalaryDeductionService {
 
-	private static final BigDecimal DEDUCTION_RATE = new BigDecimal("0.40"); // 40% deduction for non-LOP leaves
+	private static final BigDecimal DEDUCTION_RATE = new BigDecimal("0.40"); 
 	private static final BigDecimal DAYS_IN_MONTH = new BigDecimal("30");
 
 	public SalaryCalculationResult calculateSalary(List<Leave> leaves, BigDecimal salary) {
@@ -27,7 +27,6 @@ public class SalaryDeductionService {
 
 		List<Leave> currentMonthLeaves = leaves.stream().filter(leave -> leave.getStatus() == LeaveStatus.APPROVED)
 				.filter(leave -> {
-
 					LocalDate leaveStart = new java.sql.Date(leave.getStartDate().getTime()).toLocalDate();
 					LocalDate leaveEnd = new java.sql.Date(leave.getEndDate().getTime()).toLocalDate();
 					return !leaveEnd.isBefore(firstDayOfMonth) && !leaveStart.isAfter(lastDayOfMonth);

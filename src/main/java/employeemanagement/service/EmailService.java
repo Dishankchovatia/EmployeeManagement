@@ -23,6 +23,7 @@ public class EmailService {
                 "Welcome to the Employee Management System! Your account has been successfully created.\n\n" +
                 "Here are your login credentials:\n\n" +
                 "Employee ID: %s\n" +
+                "Your Salary: %s\n" +
                 "Email ID: %s\n" +
                 "Password: %s\n\n" +
                 "Please login at: http://localhost:8080/employeemanagement/signin\n\n" +
@@ -31,8 +32,10 @@ public class EmailService {
                 "Employee Management Team",
                 employee.getEmpName(),
                 employee.getEmployeeId(),
+                employee.getSalary(),
                 employee.getEmailId(),
                 plainPassword
+                
             );
 
             email.setMsg(emailContent);
