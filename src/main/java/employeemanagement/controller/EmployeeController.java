@@ -9,8 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import employeemanagement.dao.EmployeeDao;
+import employeemanagement.dao.LeaveDao;
 import employeemanagement.model.Employee;
+import employeemanagement.model.Leave;
 import employeemanagement.service.EmailService;
+import employeemanagement.service.SalaryDeductionService;
+import employeemanagement.service.SalaryDeductionService.SalaryCalculationResult;
+
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -27,6 +33,12 @@ public class EmployeeController {
 
 	@Autowired
 	private EmailService emailService;
+	
+	@Autowired
+	private LeaveDao leaveDao;
+	
+	@Autowired
+	private SalaryDeductionService salaryDeductionService;
 
 	@RequestMapping(value = "/eupdate-employee", method = RequestMethod.POST)
 	public RedirectView updateEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
@@ -87,9 +99,19 @@ public class EmployeeController {
 
 	// dashboard
 	@RequestMapping("/{employeeId}")
-	public String showDashboare(@PathVariable("employeeId") int employeeId, Model model) {
-		Employee employee = this.employeeDao.getEmployee(employeeId);
-		model.addAttribute("employee", employee);
-		return "employee-dashboard";
+	public String showDashboare(@PathVariable("employeeId") int employeeId, Model model,HttpSession session) {
+		 Integer employeId = (Integer) session.getAttribute("id");
+	        Employee employee = employeeDao.getEmployee(employeeId);
+	        List<Leave> leaves = leaveDao.getEmployeeLeaves(employeeId);
+	        
+	        // Calculate salary details
+	        SalaryCalculationResult salaryDetails = salaryDeductionService.calculateSalary(
+	            leaves, 
+	            employee.getSalary()
+	        );
+	        
+	        model.addAttribute("employee", employee);
+	        model.addAttribute("salaryDetails", salaryDetails);
+	        return "employee-dashboard";
 	}
 }

@@ -250,7 +250,6 @@ public class AdminController {
 	            return response;
 	        }
 
-	        // Parse month and year
 	        YearMonth ym = YearMonth.parse(monthYear);
 	        Date startDate = Date.from(ym.atDay(1)
 	                .atStartOfDay(ZoneId.systemDefault())
@@ -260,7 +259,6 @@ public class AdminController {
 	                .atZone(ZoneId.systemDefault())
 	                .toInstant());
 
-	        // Get approved leaves for the month
 	        List<Leave> monthlyLeaves = leaveDao.getEmployeeLeavesByDateRange(employeeId, startDate, endDate);
 	        
 	        int leaveDays = 0;

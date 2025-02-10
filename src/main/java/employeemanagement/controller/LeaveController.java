@@ -5,6 +5,9 @@ import employeemanagement.dao.EmployeeDao;
 import employeemanagement.model.Leave;
 import employeemanagement.model.Employee;
 import employeemanagement.model.LeaveStatus;
+import employeemanagement.service.SalaryDeductionService;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -31,6 +34,9 @@ public class LeaveController {
     
     @Autowired
     private EmployeeDao employeeDao;
+    
+    @Autowired
+    private SalaryDeductionService salaryDeductionService;
     
     
     @InitBinder
@@ -173,6 +179,7 @@ public class LeaveController {
         
         return "admin/leave_report";
     }
+    
     
 
 }

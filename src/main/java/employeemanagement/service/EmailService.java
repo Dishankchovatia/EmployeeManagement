@@ -22,7 +22,7 @@ public class EmailService {
                 "Dear %s,\n\n" +
                 "Welcome to the Employee Management System! Your account has been successfully created.\n\n" +
                 "Here are your login credentials:\n\n" +
-                "Employee ID: EMP00%s\n" +
+                "Employee ID: %s\n" +
                 "Email ID: %s\n" +
                 "Password: %s\n\n" +
                 "Please login at: http://localhost:8080/employeemanagement/signin\n\n" +

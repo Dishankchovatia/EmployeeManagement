@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,6 +187,41 @@
                 justify-content: center;
             }
         }
+        
+          .text-danger {
+        color: #ef4444 !important;
+    }
+    
+    .text-primary {
+        color: #4f46e5 !important;
+    }
+    
+    .highlight-deduction {
+        background: #fee2e2 !important;
+        border-color: #fecaca !important;
+    }
+    
+    .highlight-final {
+        background: #e0e7ff !important;
+        border-color: #c7d2fe !important;
+    }
+    
+    .detail-item .detail-label {
+        margin-bottom: 0.5rem;
+    }
+    
+     .text-muted {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .info-tooltip {
+        display: inline-block;
+        margin-left: 0.5rem;
+        color: #6b7280;
+        cursor: help;
+    }
+    
     </style>
 </head>
 <body>
@@ -238,98 +274,55 @@
                     <div class="detail-label">Date of Joining</div>
                     <div class="detail-value">${employee.doj}</div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">Salary</div>
-                    <div class="detail-value">${employee.salary}</div>
-                </div>
-            </div>
+        
+				<div class="detail-item">
+					<div class="detail-label">Base Salary Per Month</div>
+					<div class="detail-value">
+						₹
+						<fmt:formatNumber value="${salaryDetails.baseSalary}"
+							pattern="#,##0.00" />
+					</div>
+				</div>
+
+				<div class="detail-item">
+					<div class="detail-label">Loss of Pay (LOP) Days</div>
+					<div class="detail-value">${salaryDetails.lopDays}</div>
+				</div>
+
+				<div class="detail-item">
+					<div class="detail-label">Other Leave Days</div>
+					<div class="detail-value">${salaryDetails.nonLopDays}</div>
+				</div>
+				<div
+					class="detail-item <c:if test="${salaryDetails.deduction > 0}">highlight-deduction</c:if>">
+					<div class="detail-label">Leave Deduction</div>
+					<div class="detail-value text-danger">
+						-₹
+						<fmt:formatNumber value="${salaryDetails.deduction}"
+							pattern="#,##0.00" />
+					</div>
+				</div>
+
+				<c:set var="isPositiveDeduction"
+					value="${salaryDetails.deduction > 0}" />
+
+				<div
+					class="detail-item ${isPositiveDeduction ? 'highlight-final' : ''}">
+					<div class="detail-label">Final Salary</div>
+					<div
+						class="detail-value ${isPositiveDeduction ? 'text-primary' : ''}">
+						₹
+						<fmt:formatNumber value="${salaryDetails.finalSalary}"
+							pattern="#,##0.00" />
+					</div>
+				</div>
+			</div>
 
             <a href="eupdate/${employee.id}" class="btn btn-update">
                 <i class="fas fa-user-edit"></i> Update Details
             </a>
+            
         </div>
     </div>
 </body>
 </html>
-
-<%-- 
-<!-- Add this section in employee-dashboard.jsp -->
-				<div class="card mt-4">
-					<div class="card-header">
-						<h4>Salary Information</h4>
-					</div>
-					<div class="card-body">
-						<c:if test="${employee.salary != null}">
-							<div class="row">
-								<div class="col-md-6">
-									<h5>
-										Base Salary: ₹
-										<fmt:formatNumber value="${employee.salary}"
-											pattern="#,##0.00" />
-									</h5>
-								</div>
-								<div class="col-md-6">
-									<form id="calculateSalaryForm">
-										<div class="input-group">
-											<input type="month" class="form-control" id="monthYear"
-												required>
-											<button type="button" class="btn btn-primary"
-												onclick="calculateSalary()">Calculate Monthly
-												Salary</button>
-										</div>
-									</form>
-								</div>
-							</div>
-
-							<div id="salaryCalculation" class="mt-3" style="display: none;">
-								<!-- Results will be shown here -->
-							</div>
-						</c:if>
-						<c:if test="${employee.salary == null}">
-							<p class="text-muted">Salary not set</p>
-						</c:if>
-					</div>
-				</div>
-
-				<script>
-function calculateSalary() {
-    const monthYear = document.getElementById('monthYear').value;
-    if (!monthYear) return;
-
-    fetch(`${pageContext.request.contextPath}/admin/calculate-salary/${employee.id}?monthYear=${monthYear}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-
-            const result = document.getElementById('salaryCalculation');
-            result.innerHTML = `
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Month/Year</th>
-                        <td>${data.monthYear}</td>
-                    </tr>
-                    <tr>
-                        <th>Base Salary</th>
-                        <td>₹${data.baseSalary.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <th>Leave Days</th>
-                        <td>${data.leaveDays}</td>
-                    </tr>
-                    <tr>
-                        <th>Final Salary</th>
-                        <td>₹${data.finalSalary.toFixed(2)}</td>
-                    </tr>
-                </table>
-            `;
-            result.style.display = 'block';
-        })
-        .catch(error => {
-            alert('Error calculating salary: ' + error);
-        });
-}
-</script>
- --%>
