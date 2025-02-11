@@ -2,6 +2,7 @@ package employeemanagement.controller;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -305,10 +306,12 @@ public class AdminController {
 	}
 	
 	 @GetMapping("/attendance-dashboard")
-	    public String attendanceDashboard(Model model) {
-	        AttendanceStats stats = attendanceService.getAttendanceStats();
+	    public String attendanceDashboard(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date, 
+	                                    Model model) {
+	        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+	        AttendanceStats stats = attendanceService.getAttendanceStatsByDate(targetDate);
 	        model.addAttribute("stats", stats);
+	        model.addAttribute("selectedDate", targetDate);
 	        return "attendance-dashboard";
 	    }
-
 }

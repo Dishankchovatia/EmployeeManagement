@@ -95,6 +95,34 @@
             background-color: var(--primary);
             color: white;
         }
+	    .btn-check-records {
+	      background-color: var(--primary-light);
+	      color:black;
+	      border: none;
+	      padding: 0.5rem 1.5rem;
+	      border-radius: 0.5rem;
+	      cursor: pointer;
+	      transition: background-color 0.3s ease, transform 0.3s ease;
+	  }
+	  
+	  .btn-check-records:hover {
+	      background-color: var(--primary);
+	      transform: translateY(-2px);
+	  }
+	  .date-input {
+	    width: 200px;
+	    padding: 0.75rem 1rem;
+	    border: 2px solid var(--input-border);
+	    border-radius: 8px;
+	    font-size: 1rem;
+	    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	  }
+	  
+	  .date-input:focus {
+	    border-color: var(--primary);
+	    outline: none;
+	    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+	  }
         
     </style>
 </head>
@@ -152,14 +180,36 @@
                 </div>
             </div>
 
-            <!-- Attendance List -->
+			<form
+				action="${pageContext.request.contextPath}/attendance-dashboard"
+				method="get">
+				<input type="date" name="date" value="${selectedDate}"
+					class="date-input" />
+				<button type="submit" class="btn btn-check-records">
+					<i class="fas fa-search me-2"></i> Check Records
+				</button>
+			</form>
+
+
+
+			<!-- Attendance List -->
             <div class="attendance-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0 fw-bold">Today's Attendance</h4>
-                <div class="status-badge bg-light text-dark">
-                    <i class="fas fa-calendar-day me-2"></i>
-                    <fmt:formatDate value="${currentDate}" pattern="EEEE, MMMM d" />
-                </div>
-            </div>
+				<div class="status-badge bg-light text-dark">
+					<i class="fas fa-calendar-day me-2"></i>
+					<c:choose>
+						<c:when test="${not empty selectedDate}">
+							<fmt:parseDate var="selectedDateParsed" value="${selectedDate}"
+								pattern="yyyy-MM-dd" />
+							<fmt:formatDate value="${selectedDateParsed}"
+								pattern="EEEE, MMMM d" />
+						</c:when>
+						<c:otherwise>
+							<fmt:formatDate value="${currentDate}" pattern="EEEE, MMMM d" />
+						</c:otherwise>
+					</c:choose>
+				</div>
+			</div>
 
             <div class="card border-0 shadow">
                 <div class="card-body p-0">

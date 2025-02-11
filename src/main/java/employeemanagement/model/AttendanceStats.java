@@ -1,5 +1,6 @@
 package employeemanagement.model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class AttendanceStats {
@@ -7,8 +8,17 @@ public class AttendanceStats {
     private int presentEmployees;
     private int absentEmployees;
     private List<Attendance> attendanceList;
+    private LocalDate date;
 
-    // Getters and setters
+    public LocalDate getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	// Getters and setters
     public int getTotalEmployees() {
         return totalEmployees;
     }

@@ -7,6 +7,7 @@ import employeemanagement.dao.EmployeeDao;
 import employeemanagement.model.Attendance;
 import employeemanagement.model.AttendanceStats;
 import employeemanagement.model.Employee;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,14 +42,19 @@ public class AttendanceService {
     }
 
     public AttendanceStats getAttendanceStats() {
+        return getAttendanceStatsByDate(LocalDate.now());
+    }
+
+    public AttendanceStats getAttendanceStatsByDate(LocalDate date) {
         List<Employee> allEmployees = employeeDao.getEmployees();
-        List<Attendance> todayAttendance = attendanceDao.getAllTodayAttendance();
+        List<Attendance> dateAttendance = attendanceDao.getAttendanceByDate(date);
         
         AttendanceStats stats = new AttendanceStats();
         stats.setTotalEmployees(allEmployees.size());
-        stats.setPresentEmployees(todayAttendance.size());
-        stats.setAbsentEmployees(allEmployees.size() - todayAttendance.size());
-        stats.setAttendanceList(todayAttendance);
+        stats.setPresentEmployees(dateAttendance.size());
+        stats.setAbsentEmployees(allEmployees.size() - dateAttendance.size());
+        stats.setAttendanceList(dateAttendance);
+        stats.setDate(date);
         
         return stats;
     }

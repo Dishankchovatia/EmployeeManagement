@@ -1,5 +1,6 @@
 package employeemanagement.dao;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.hibernate.query.Query;
@@ -25,10 +26,10 @@ public class AttendanceDao {
         this.hibernateTemplate.update(attendance);
     }
 
-    public Attendance getTodayAttendance(int employeeId) {
+    public Attendance getAttendanceByDateAndEmployee(LocalDate date, int employeeId) {
         return hibernateTemplate.execute(session -> {
-            LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(23, 59, 59);
             
             String hql = "FROM Attendance WHERE employee.id = :employeeId AND date BETWEEN :startOfDay AND :endOfDay";
             Query<Attendance> query = session.createQuery(hql, Attendance.class);
@@ -41,10 +42,10 @@ public class AttendanceDao {
         });
     }
 
-    public List<Attendance> getAllTodayAttendance() {
+    public List<Attendance> getAttendanceByDate(LocalDate date) {
         return hibernateTemplate.execute(session -> {
-            LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(23, 59, 59);
             
             String hql = "FROM Attendance WHERE date BETWEEN :startOfDay AND :endOfDay";
             Query<Attendance> query = session.createQuery(hql, Attendance.class);
@@ -53,5 +54,13 @@ public class AttendanceDao {
             
             return query.list();
         });
+    }
+
+    public Attendance getTodayAttendance(int employeeId) {
+        return getAttendanceByDateAndEmployee(LocalDate.now(), employeeId);
+    }
+
+    public List<Attendance> getAllTodayAttendance() {
+        return getAttendanceByDate(LocalDate.now());
     }
 }
