@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard</title>
     <%@include file="./base.jsp"%>
-    
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
@@ -222,9 +225,36 @@
         cursor: help;
     }
     
+    .time-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .attendance-card {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .attendance-status {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .timer {
+            font-size: 1.8rem;
+            text-align: center;
+            margin: 15px 0;
+        }
+    
     </style>
+    
+    
 </head>
 <body>
+<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" id="csrfToken"/>
+
     <a href="${pageContext.request.contextPath}/logout" class="btn btn-logout">
         <i class="fas fa-sign-out-alt"></i> Logout
     </a>
@@ -234,7 +264,6 @@
             <h1>Employee Dashboard</h1>
             <h2>Welcome, ${employee.empName}!</h2>
         </div>
-
         <div class="employee-details">
             <div class="action-buttons">
                 <a href="${pageContext.request.contextPath}/apply-leave" class="btn btn-primary">
@@ -244,7 +273,7 @@
                     <i class="fas fa-calendar-check"></i> My Leaves
                 </a>
             </div>
-
+            
             <div class="details-grid">
                 <div class="detail-item">
                     <div class="detail-label">Name</div>
@@ -317,12 +346,187 @@
 					</div>
 				</div>
 			</div>
-
-            <a href="eupdate/${employee.id}" class="btn btn-update">
+			<a href="eupdate/${employee.id}" class="btn btn-update">
                 <i class="fas fa-user-edit"></i> Update Details
             </a>
-            
         </div>
-    </div>
+
+	<!-- Attendance Section -->
+		<div class="card mt-4">
+			<div class="card-header">
+				<h4>Attendance Management</h4>
+			</div>
+			<div class="card-body">
+				<div id="attendanceStatus">
+					<!-- Status will be displayed here -->
+				</div>
+
+				<div id="workingHours" class="alert alert-info mt-3"
+					style="display: none;">
+					<!-- Working hours will be displayed here -->
+				</div>
+
+				<div class="d-flex gap-2 mt-3">
+					<button id="checkInBtn" class="btn btn-success">Check In</button>
+					<button id="checkOutBtn" class="btn btn-danger"
+						style="display: none;">Check Out</button>
+				</div>
+
+				<div id="currentTime" class="mt-3">
+					<!-- Current time will be displayed here -->
+				</div>
+			</div>
+		</div>
+
+	</div>
+	
+<script>
+
+function formatTime(dateTimeString) {
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString();
+}
+
+function formatDuration(hours) {
+    const totalMinutes = Math.round(hours * 60);
+    const hours_ = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours_} hours ${minutes} minutes`;
+}
+
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    document.getElementById('currentTime').textContent = 'Current Time: ' + timeString;
+}
+
+function updateAttendanceStatus() {
+    const token = document.getElementById('csrfToken').value;
+    
+    fetch('${pageContext.request.contextPath}/attendance-status', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const statusDiv = document.getElementById('attendanceStatus');
+        const workingHoursDiv = document.getElementById('workingHours');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkOutBtn = document.getElementById('checkOutBtn');
+
+        if (data.error) {
+            statusDiv.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+            return;
+        }
+
+        if (data.completed) {
+            
+            statusDiv.innerHTML = 
+                '<div class="alert alert-success">' +
+                'Today\'s attendance completed<br>' +
+                'Check-in: ' + formatTime(data.checkInTime) + '<br>' +
+                'Check-out: ' + formatTime(data.checkOutTime) + 
+                '</div>';
+            workingHoursDiv.innerHTML = "Total working time: " + data.hours + " hours " + data.minutes + " minutes";
+            workingHoursDiv.style.display = 'block';
+            checkInBtn.style.display = 'none';
+            checkOutBtn.style.display = 'none';
+        } else if (data.checkedIn) {
+           
+            const checkInTime = new Date(data.checkInTime);
+            const now = new Date();
+            const durationMinutes = Math.floor((now - checkInTime) / (1000 * 60));
+            const currentHours = Math.floor(durationMinutes / 60);
+            const currentMinutes = durationMinutes % 60;
+
+            statusDiv.innerHTML = 
+                '<div class="alert alert-info">' +
+                'You checked in at: ' + formatTime(data.checkInTime) +
+                '</div>';
+            workingHoursDiv.innerHTML = "Current working time: " + currentHours + " hours " + currentMinutes + " minutes";
+            workingHoursDiv.style.display = 'block';
+            checkInBtn.style.display = 'none';
+            checkOutBtn.style.display = 'block';
+        } else {
+            
+            statusDiv.innerHTML = '<div class="alert alert-warning">You haven\'t checked in today</div>';
+            checkInBtn.style.display = 'block';
+            checkOutBtn.style.display = 'none';
+            workingHoursDiv.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('attendanceStatus').innerHTML = 
+            '<div class="alert alert-danger">Error loading attendance status. Please try again.</div>';
+    });
+}
+
+setInterval(updateAttendanceStatus, 60000);
+document.getElementById('checkInBtn').addEventListener('click', function() {
+    const token = document.getElementById('csrfToken').value;
+    
+    fetch('${pageContext.request.contextPath}/check-in', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateAttendanceStatus();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error checking in. Please try again.');
+    });
+});
+
+document.getElementById('checkOutBtn').addEventListener('click', function() {
+    const token = document.getElementById('csrfToken').value;
+    
+    fetch('${pageContext.request.contextPath}/check-out', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateAttendanceStatus();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error checking out. Please try again.');
+    });
+});
+
+setInterval(updateClock, 1000);
+
+updateClock();
+updateAttendanceStatus();
+</script>
+    
 </body>
 </html>

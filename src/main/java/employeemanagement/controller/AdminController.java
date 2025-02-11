@@ -36,9 +36,11 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import employeemanagement.dao.EmployeeDao;
 import employeemanagement.dao.LeaveDao;
+import employeemanagement.model.AttendanceStats;
 import employeemanagement.model.Employee;
 import employeemanagement.model.Leave;
 import employeemanagement.model.LeaveStatus;
+import employeemanagement.service.AttendanceService;
 import employeemanagement.service.EmailService;
 
 @Controller
@@ -55,6 +57,9 @@ public class AdminController {
 
 	@Autowired
 	private EmailService emailService;
+	
+	@Autowired
+    private AttendanceService attendanceService;
 
 	@GetMapping("/dashboard")
 	public String adminDashboard(Model model, HttpSession session) {
@@ -298,5 +303,12 @@ public class AdminController {
 	    
 	    return response;
 	}
+	
+	 @GetMapping("/attendance-dashboard")
+	    public String attendanceDashboard(Model model) {
+	        AttendanceStats stats = attendanceService.getAttendanceStats();
+	        model.addAttribute("stats", stats);
+	        return "attendance-dashboard";
+	    }
 
 }

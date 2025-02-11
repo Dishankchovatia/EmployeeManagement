@@ -41,7 +41,8 @@ public class SessionCheckFilter implements Filter {
         "/admin/pending-leaves",
         "/admin/process-leave",
         "/admin/generate-leave-report",
-        "/admin/leave-report"
+        "/admin/leave-report",
+        "/attendance-dashboard"
     ));
 
     // URLs that employees can access
@@ -50,7 +51,10 @@ public class SessionCheckFilter implements Filter {
         "/eupdate-employee",
         "/apply-leave",
         "/submit-leave",
-        "/my-leaves"
+        "/my-leaves",
+        "/check-in",
+        "/check-out",
+        "/attendance-status"
     ));
 
     @Override
