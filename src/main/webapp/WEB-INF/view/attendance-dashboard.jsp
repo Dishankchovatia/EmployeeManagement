@@ -224,44 +224,45 @@
                                     <th class="py-3 px-4 text-end">Total Hours</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <c:forEach items="${stats.attendanceList}" var="attendance">
-                                    <tr>
-                                        <td class="px-4 fw-medium">${attendance.employee.employeeId}</td>
-                                        <td class="px-4">${attendance.employee.empName}</td>
-                                        <td class="px-4">
-                                            <span class="text-success">
-                                                <fmt:formatDate value="${attendance.checkInTimeAsDate}" pattern="HH:mm" />
-                                            </span>
-                                        </td>
-                                        <td class="px-4">
-                                            <c:choose>
-                                                <c:when test="${attendance.checkOutTime != null}">
-                                                    <span class="text-danger">
-                                                        <fmt:formatDate value="${attendance.checkOutTimeAsDate}" pattern="HH:mm" />
-                                                    </span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="text-warning">Still Working</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td class="px-4 text-end fw-medium">
-                                            <c:choose>
-                                                <c:when test="${attendance.totalHours != null}">
-                                                    <span class="text-primary">
-                                                        <fmt:formatNumber value="${attendance.totalHours}" pattern="##0.00" />h
-                                                    </span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="text-muted">-</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
+							<tbody>
+								<c:forEach items="${stats.attendanceList}" var="attendance">
+									<tr>
+										<td class="px-4 fw-medium">${attendance.employee.employeeId}</td>
+										<td class="px-4">${attendance.employee.empName}</td>
+										<td class="px-4"><span class="text-success"> <fmt:formatDate
+													value="${attendance.firstCheckInAsDate}" pattern="HH:mm" />
+										</span></td>
+										<td class="px-4"><c:choose>
+												<c:when test="${attendance.checkOutTime != null}">
+													<span class="text-danger"> <fmt:formatDate
+															value="${attendance.checkOutTimeAsDate}" pattern="HH:mm" />
+													</span>
+												</c:when>
+												<c:otherwise>
+													<span class="text-warning">Still Working</span>
+												</c:otherwise>
+											</c:choose></td>
+										<td class="px-4 text-end fw-medium"><c:choose>
+												<c:when test="${attendance.totalHours != null}">
+													<c:set var="hours"
+														value="${attendance.totalHours - (attendance.totalHours % 1)}" />
+													<c:set var="minutes"
+														value="${(attendance.totalHours % 1) * 60}" />
+
+													<span class="text-primary"> <fmt:formatNumber
+															value="${hours}" pattern="00" />h <fmt:formatNumber
+															value="${minutes}" pattern="00" />m
+													</span>
+
+												</c:when>
+												<c:otherwise>
+													<span class="text-muted">-</span>
+												</c:otherwise>
+											</c:choose></td>
+									</tr>
+								</c:forEach>
+							</tbody>
+						</table>
                     </div>
                 </div>
             </div>

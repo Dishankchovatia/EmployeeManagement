@@ -9,7 +9,7 @@ import java.time.Duration;
 @Entity
 @Table(name = "attendance")
 public class Attendance {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
@@ -17,6 +17,9 @@ public class Attendance {
 	@ManyToOne
 	@JoinColumn(name = "employee_id", nullable = false)
 	private Employee employee;
+
+	@Column(name = "first_check_in")
+	private LocalDateTime firstCheckIn;
 
 	@Column(name = "check_in_time")
 	private LocalDateTime checkInTime;
@@ -62,10 +65,15 @@ public class Attendance {
 
 	public void setCheckOutTime(LocalDateTime checkOutTime) {
 		this.checkOutTime = checkOutTime;
-		if (checkInTime != null && checkOutTime != null) {
+		/*if (checkInTime != null && checkOutTime != null) {
 			Duration duration = Duration.between(checkInTime, checkOutTime);
-			this.totalHours = duration.toMinutes() / 60.0;
-		}
+			double sessionHours = duration.toMinutes() / 60.0;
+			if (this.totalHours == null) {
+				this.totalHours = sessionHours;
+			} else {
+				this.totalHours += sessionHours;
+			}
+		}*/
 	}
 
 	public Double getTotalHours() {
@@ -91,4 +99,17 @@ public class Attendance {
 	public Date getCheckOutTimeAsDate() {
 		return (checkOutTime == null) ? null : Date.from(checkOutTime.atZone(ZoneId.systemDefault()).toInstant());
 	}
+
+	public LocalDateTime getFirstCheckIn() {
+		return firstCheckIn;
+	}
+
+	public void setFirstCheckIn(LocalDateTime firstCheckIn) {
+		this.firstCheckIn = firstCheckIn;
+	}
+
+	public Date getFirstCheckInAsDate() {
+		return firstCheckIn != null ? Date.from(firstCheckIn.atZone(ZoneId.systemDefault()).toInstant()) : null;
+	}
+
 }

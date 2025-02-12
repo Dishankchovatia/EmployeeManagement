@@ -381,28 +381,40 @@
 	</div>
 	
 <script>
-
+//Function to format time
 function formatTime(dateTimeString) {
     const date = new Date(dateTimeString);
     return date.toLocaleTimeString();
 }
 
-function formatDuration(hours) {
-    const totalMinutes = Math.round(hours * 60);
-    const hours_ = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours_} hours ${minutes} minutes`;
+// Function to calculate duration of the current session
+function calculateDuration(checkInTime, endTime = new Date()) {
+    const checkInDate = new Date(checkInTime);
+    if (isNaN(checkInDate)) {
+        console.error("Invalid checkInTime:", checkInTime);
+        return "Invalid time";
+    }
+    const endDate = new Date(endTime);
+    const diffMs = endDate - checkInDate;
+    const diffHrs = Math.floor(diffMs / 3600000);
+    const diffMins = Math.floor((diffMs % 3600000) / 60000);    
+    return diffHrs + " hours " + diffMins + " minutes";
 }
 
+
+
+// Function to update the clock
 function updateClock() {
     const now = new Date();
     const timeString = now.toLocaleTimeString();
     document.getElementById('currentTime').textContent = 'Current Time: ' + timeString;
 }
 
+// Function to update attendance status
 function updateAttendanceStatus() {
     const token = document.getElementById('csrfToken').value;
-    
+    const statusDiv = document.getElementById('attendanceStatus'); 
+
     fetch('${pageContext.request.contextPath}/attendance-status', {
         method: 'GET',
         headers: {
@@ -418,8 +430,6 @@ function updateAttendanceStatus() {
         return response.json();
     })
     .then(data => {
-        const statusDiv = document.getElementById('attendanceStatus');
-        const workingHoursDiv = document.getElementById('workingHours');
         const checkInBtn = document.getElementById('checkInBtn');
         const checkOutBtn = document.getElementById('checkOutBtn');
 
@@ -429,49 +439,37 @@ function updateAttendanceStatus() {
         }
 
         if (data.completed) {
-            
             statusDiv.innerHTML = 
                 '<div class="alert alert-success">' +
-                'Today\'s attendance completed<br>' +
+                'Latest session details:<br>' +
                 'Check-in: ' + formatTime(data.checkInTime) + '<br>' +
-                'Check-out: ' + formatTime(data.checkOutTime) + 
+                'Check-out: ' + formatTime(data.checkOutTime) + '<br>' +
+                'Total time worked today: ' + data.hours + ' hours ' + data.minutes + ' minutes' +
                 '</div>';
-            workingHoursDiv.innerHTML = "Total working time: " + data.hours + " hours " + data.minutes + " minutes";
-            workingHoursDiv.style.display = 'block';
-            checkInBtn.style.display = 'none';
+            checkInBtn.style.display = 'block';
             checkOutBtn.style.display = 'none';
         } else if (data.checkedIn) {
-           
-            const checkInTime = new Date(data.checkInTime);
-            const now = new Date();
-            const durationMinutes = Math.floor((now - checkInTime) / (1000 * 60));
-            const currentHours = Math.floor(durationMinutes / 60);
-            const currentMinutes = durationMinutes % 60;
+        	const currentDuration = calculateDuration(data.checkInTime);
+        	statusDiv.innerHTML = 
+        	    '<div class="alert alert-info">' +
+        	    'Current session started at: ' + formatTime(data.checkInTime) + '<br>' +
+        	    'Time worked this session: ' + currentDuration + '<br>' +
+        	    '</div>';
 
-            statusDiv.innerHTML = 
-                '<div class="alert alert-info">' +
-                'You checked in at: ' + formatTime(data.checkInTime) +
-                '</div>';
-            workingHoursDiv.innerHTML = "Current working time: " + currentHours + " hours " + currentMinutes + " minutes";
-            workingHoursDiv.style.display = 'block';
             checkInBtn.style.display = 'none';
             checkOutBtn.style.display = 'block';
         } else {
-            
             statusDiv.innerHTML = '<div class="alert alert-warning">You haven\'t checked in today</div>';
             checkInBtn.style.display = 'block';
             checkOutBtn.style.display = 'none';
-            workingHoursDiv.style.display = 'none';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        document.getElementById('attendanceStatus').innerHTML = 
-            '<div class="alert alert-danger">Error loading attendance status. Please try again.</div>';
+        statusDiv.innerHTML = '<div class="alert alert-danger">Error loading attendance status. Please try again.</div>';
     });
 }
 
-setInterval(updateAttendanceStatus, 60000);
 document.getElementById('checkInBtn').addEventListener('click', function() {
     const token = document.getElementById('csrfToken').value;
     
@@ -488,7 +486,7 @@ document.getElementById('checkInBtn').addEventListener('click', function() {
         if (data.status === 'success') {
             updateAttendanceStatus();
         } else {
-            alert(data.message);
+            alert(data.message || 'Error checking in');
         }
     })
     .catch(error => {
@@ -513,7 +511,7 @@ document.getElementById('checkOutBtn').addEventListener('click', function() {
         if (data.status === 'success') {
             updateAttendanceStatus();
         } else {
-            alert(data.message);
+            alert(data.message || 'Error checking out');
         }
     })
     .catch(error => {
@@ -522,6 +520,7 @@ document.getElementById('checkOutBtn').addEventListener('click', function() {
     });
 });
 
+setInterval(updateAttendanceStatus, 60000);
 setInterval(updateClock, 1000);
 
 updateClock();
