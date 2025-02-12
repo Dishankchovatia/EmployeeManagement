@@ -7,18 +7,19 @@ public class AttendanceStats {
     private int totalEmployees;
     private int presentEmployees;
     private int absentEmployees;
+    private int onLeaveEmployees;
     private List<Attendance> attendanceList;
+    private List<Leave> leavesForToday;
     private LocalDate date;
 
     public LocalDate getDate() {
-		return date;
-	}
+        return date;
+    }
 
-	public void setDate(LocalDate date) {
-		this.date = date;
-	}
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 
-	// Getters and setters
     public int getTotalEmployees() {
         return totalEmployees;
     }
@@ -43,11 +44,27 @@ public class AttendanceStats {
         this.absentEmployees = absentEmployees;
     }
 
+    public int getOnLeaveEmployees() {
+        return onLeaveEmployees;
+    }
+
+    public void setOnLeaveEmployees(int onLeaveEmployees) {
+        this.onLeaveEmployees = onLeaveEmployees;
+    }
+
     public List<Attendance> getAttendanceList() {
         return attendanceList;
     }
 
     public void setAttendanceList(List<Attendance> attendanceList) {
         this.attendanceList = attendanceList;
+    }
+
+    public List<Leave> getLeavesForToday() {
+        return leavesForToday;
+    }
+
+    public void setLeavesForToday(List<Leave> leavesForToday) {
+        this.leavesForToday = leavesForToday;
     }
 }

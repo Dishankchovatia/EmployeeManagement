@@ -65,15 +65,6 @@ public class Attendance {
 
 	public void setCheckOutTime(LocalDateTime checkOutTime) {
 		this.checkOutTime = checkOutTime;
-		/*if (checkInTime != null && checkOutTime != null) {
-			Duration duration = Duration.between(checkInTime, checkOutTime);
-			double sessionHours = duration.toMinutes() / 60.0;
-			if (this.totalHours == null) {
-				this.totalHours = sessionHours;
-			} else {
-				this.totalHours += sessionHours;
-			}
-		}*/
 	}
 
 	public Double getTotalHours() {

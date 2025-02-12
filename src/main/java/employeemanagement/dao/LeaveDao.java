@@ -1,14 +1,15 @@
 package employeemanagement.dao;
 
-import employeemanagement.model.Leave;
-import org.hibernate.query.Query;
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import employeemanagement.model.Leave;
+import employeemanagement.model.LeaveStatus;
 
 @Component
 public class LeaveDao {
@@ -60,6 +61,35 @@ public class LeaveDao {
                     .setParameter("startDate", startDate)
                     .setParameter("endDate", endDate)
                     .list();
+        });
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Leave> getLeavesByDate(Date targetDate) {
+        String hql = "FROM Leave l WHERE l.startDate <= :targetDate " +
+                    "AND l.endDate >= :targetDate " +
+                    "AND l.status = :status";
+        
+        @SuppressWarnings("unchecked")
+        List<Leave> leaves = (List<Leave>) hibernateTemplate.execute(session -> {
+            return session.createQuery(hql)
+                .setParameter("targetDate", targetDate)
+                .setParameter("status", LeaveStatus.APPROVED)
+                .list();
+        });
+        
+        return leaves;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Leave> getLeavesByDateRange(Date startDate, Date endDate) {
+        String hql = "FROM Leave l WHERE l.startDate >= :startDate AND l.endDate <= :endDate";
+        
+        return (List<Leave>) hibernateTemplate.execute(session -> {
+            return session.createQuery(hql)
+                .setParameter("startDate", startDate)
+                .setParameter("endDate", endDate)
+                .list();
         });
     }
     

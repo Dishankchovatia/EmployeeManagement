@@ -1,6 +1,7 @@
 package employeemanagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -13,16 +14,23 @@ import org.springframework.web.servlet.view.RedirectView;
 import employeemanagement.dao.AttendanceDao;
 import employeemanagement.dao.EmployeeDao;
 import employeemanagement.dao.LeaveDao;
+import employeemanagement.dto.AttendanceRecordDTO;
 import employeemanagement.model.Attendance;
+import employeemanagement.model.CalendarDay;
 import employeemanagement.model.Employee;
 import employeemanagement.model.Leave;
+import employeemanagement.service.AttendanceReportService;
 import employeemanagement.service.AttendanceService;
 import employeemanagement.service.EmailService;
 import employeemanagement.service.SalaryDeductionService;
 import employeemanagement.service.SalaryDeductionService.SalaryCalculationResult;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +62,9 @@ public class EmployeeController {
 	
 	@Autowired
 	private AttendanceDao attendanceDao;
+	
+	@Autowired
+	private AttendanceReportService attendanceReportService;
 
 	@RequestMapping(value = "/eupdate-employee", method = RequestMethod.POST)
 	public RedirectView updateEmployee(@Valid @ModelAttribute Employee employee, BindingResult result,
@@ -220,5 +231,62 @@ public class EmployeeController {
         return response;
     }
 
+    @GetMapping("/attendance/report/{employeeId}")
+    public String getAttendanceReport(
+            @PathVariable int employeeId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+            Model model) {
+        
+        if (startDate == null || endDate == null) {
+            YearMonth currentMonth = YearMonth.now();
+            startDate = currentMonth.atDay(1);
+            endDate = currentMonth.atEndOfMonth();
+        }
+        
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        Employee employee = employeeDao.getEmployee(employeeId);
+        AttendanceRecordDTO record = attendanceReportService.generateAttendanceReport(
+            employeeId, startDateTime, endDateTime);
+        
+        model.addAttribute("employee", employee);
+        model.addAttribute("record", record);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        
+        return "attendance_report";
+    }
 
+    
+    @GetMapping("/attendance/calender/{employeeId}")
+    public String getAttendanceCalendar(
+            @PathVariable int employeeId,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year,
+            Model model) {
+        
+        LocalDate today = LocalDate.now();
+        month = month != null ? month : today.getMonthValue();
+        year = year != null ? year : today.getYear();
+        Employee employee = employeeDao.getEmployee(employeeId);
+        
+        List<List<CalendarDay>> calendarData = attendanceReportService.generateCalendarData(employeeId, month, year);
+ 
+        List<Integer> yearRange = new ArrayList<>();
+        for (int i = year - 2; i <= year + 2; i++) {
+            yearRange.add(i);
+        }
+        
+        model.addAttribute("employee", employee);
+        model.addAttribute("calendarData", calendarData);
+        model.addAttribute("currentMonth", month);
+        model.addAttribute("currentYear", year);
+        model.addAttribute("yearRange", yearRange);  // Add this
+        model.addAttribute("monthYear", Month.of(month).toString() + " " + year);
+        
+        return "attendance_calendar";
+    }
+    
 }

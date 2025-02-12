@@ -133,7 +133,7 @@
             
             <!-- Statistics Cards -->
             <div class="row g-4 mb-4">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="dashboard-card card bg-white">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -148,7 +148,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="dashboard-card card bg-white">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -163,7 +163,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="dashboard-card card bg-white">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -178,7 +178,23 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-lg-3 col-md-6">
+				<div class="dashboard-card card bg-white">
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="icon-wrapper bg-warning">
+								<i class="fas fa-calendar-minus text-white fs-5"></i>
+							</div>
+							<div class="ms-3">
+								<h5 class="card-title mb-0">ON LEAVE</h5>
+								<div class="card-value text-dark">${stats.onLeaveEmployees}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
             </div>
+			
 
 			<form
 				action="${pageContext.request.contextPath}/attendance-dashboard"
@@ -210,7 +226,7 @@
 					</c:choose>
 				</div>
 			</div>
-
+	       
             <div class="card border-0 shadow">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -221,7 +237,8 @@
                                     <th class="py-3 px-4">Name</th>
                                     <th class="py-3 px-4">Check-in</th>
                                     <th class="py-3 px-4">Check-out</th>
-                                    <th class="py-3 px-4 text-end">Total Hours</th>
+                                    <th class="py-3 px-4">Total Hours</th>
+                                    <th class="py-3 px-4 text-end">Check-out</th>
                                 </tr>
                             </thead>
 							<tbody>
@@ -229,6 +246,7 @@
 									<tr>
 										<td class="px-4 fw-medium">${attendance.employee.employeeId}</td>
 										<td class="px-4">${attendance.employee.empName}</td>
+
 										<td class="px-4"><span class="text-success"> <fmt:formatDate
 													value="${attendance.firstCheckInAsDate}" pattern="HH:mm" />
 										</span></td>
@@ -242,7 +260,7 @@
 													<span class="text-warning">Still Working</span>
 												</c:otherwise>
 											</c:choose></td>
-										<td class="px-4 text-end fw-medium"><c:choose>
+										<td class="px-4"><c:choose>
 												<c:when test="${attendance.totalHours != null}">
 													<c:set var="hours"
 														value="${attendance.totalHours - (attendance.totalHours % 1)}" />
@@ -258,7 +276,17 @@
 												<c:otherwise>
 													<span class="text-muted">-</span>
 												</c:otherwise>
-											</c:choose></td>
+											</c:choose>
+											</td>
+										<td class="px-4 text-end fw-medium"><a
+											href="attendance/report/${attendance.employee.id}"
+											class="text-decoration-none me-2"> <i
+												class="fas fa-file-alt text-primary"></i>
+										</a> <a href="attendance/calender/${attendance.employee.id}"
+											class="text-decoration-none"> <i
+												class="fas fa-calendar-alt text-success"></i>
+										</a>
+										</td>
 									</tr>
 								</c:forEach>
 							</tbody>

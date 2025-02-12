@@ -42,7 +42,9 @@ public class SessionCheckFilter implements Filter {
         "/admin/process-leave",
         "/admin/generate-leave-report",
         "/admin/leave-report",
-        "/attendance-dashboard"
+        "/attendance-dashboard",
+        "/attendance/report",
+        "/attendance/calender"
     ));
 
     // URLs that employees can access
@@ -54,7 +56,9 @@ public class SessionCheckFilter implements Filter {
         "/my-leaves",
         "/check-in",
         "/check-out",
-        "/attendance-status"
+        "/attendance-status",
+        "/attendance/report",
+        "/attendance/calender"
     ));
 
     @Override

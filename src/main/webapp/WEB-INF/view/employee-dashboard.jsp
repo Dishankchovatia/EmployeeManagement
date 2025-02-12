@@ -353,9 +353,20 @@
 
 	<!-- Attendance Section -->
 		<div class="card mt-4">
-			<div class="card-header">
-				<h4>Attendance Management</h4>
+			<div
+				class="card-header d-flex justify-content-between align-items-center">
+				<h4 class="mb-0">Attendance Management</h4>
+				<div>
+					<a href="attendance/calender/${employee.id}"
+						class="btn btn-outline-primary me-2"> <i
+						class="fas fa-calendar-alt"></i> Calendar
+					</a> <a href="attendance/report/${employee.id}"
+						class="btn btn-outline-success"> <i class="fas fa-file-alt"></i>
+						Report
+					</a>
+				</div>
 			</div>
+
 			<div class="card-body">
 				<div id="attendanceStatus">
 					<!-- Status will be displayed here -->

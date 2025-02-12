@@ -278,13 +278,11 @@ public class AdminController {
 	            }
 	        }
 
-	        // Calculate daily wage
 	        BigDecimal dailyWage = employee.getSalary()
 	                .divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
 	        
 	        BigDecimal finalSalary = employee.getSalary();
 	        
-	        // Apply deduction if leaves > 3
 	        if (leaveDays > 3) {
 	            int excessLeaves = leaveDays - 3;
 	            BigDecimal deduction = dailyWage
