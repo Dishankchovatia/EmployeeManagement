@@ -266,8 +266,6 @@
     </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
  </script>
- 
-
 </head>
 <body>
     <div class="container mt-3">

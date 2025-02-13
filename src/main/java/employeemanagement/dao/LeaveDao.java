@@ -65,6 +65,24 @@ public class LeaveDao {
     }
     
     @Transactional(readOnly = true)
+    public List<Leave> getEmployeeLeavesByDate(int employeeId, Date startDate, Date endDate) {
+        String hql = "FROM Leave l WHERE l.employee.id = :employeeId " +
+        			"AND l.status = 'APPROVED'"+
+                    "AND ((l.startDate BETWEEN :startDate AND :endDate) " +
+                    "OR (l.endDate BETWEEN :startDate AND :endDate) " +
+                    "OR (l.startDate <= :startDate AND l.endDate >= :endDate)) " +
+                    "ORDER BY l.startDate DESC";
+
+        return (List<Leave>) hibernateTemplate.execute(hbsession -> {
+            return hbsession.createQuery(hql)
+                    .setParameter("employeeId", employeeId)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .list();
+        });
+    }
+    
+    @Transactional(readOnly = true)
     public List<Leave> getLeavesByDate(Date targetDate) {
         String hql = "FROM Leave l WHERE l.startDate <= :targetDate " +
                     "AND l.endDate >= :targetDate " +
@@ -81,16 +99,5 @@ public class LeaveDao {
         return leaves;
     }
 
-    @Transactional(readOnly = true)
-    public List<Leave> getLeavesByDateRange(Date startDate, Date endDate) {
-        String hql = "FROM Leave l WHERE l.startDate >= :startDate AND l.endDate <= :endDate";
-        
-        return (List<Leave>) hibernateTemplate.execute(session -> {
-            return session.createQuery(hql)
-                .setParameter("startDate", startDate)
-                .setParameter("endDate", endDate)
-                .list();
-        });
-    }
     
 }

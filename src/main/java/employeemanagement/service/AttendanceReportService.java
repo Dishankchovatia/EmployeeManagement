@@ -36,7 +36,7 @@ public class AttendanceReportService {
 			LocalDateTime endDate) {
 		List<Attendance> attendances = attendanceDao.getAttendanceByEmployeeAndDateRange(employeeId, startDate,
 				endDate);
-		List<Leave> leaves = leaveDao.getLeavesByDateRange(
+		List<Leave> leaves = leaveDao.getEmployeeLeavesByDate(employeeId,
 				java.util.Date.from(startDate.atZone(java.time.ZoneId.systemDefault()).toInstant()),
 				java.util.Date.from(endDate.atZone(java.time.ZoneId.systemDefault()).toInstant()));
 
@@ -114,7 +114,7 @@ public class AttendanceReportService {
 		List<Attendance> attendances = attendanceDao.getAttendanceByEmployeeAndDateRange(employeeId,
 				firstDayOfMonth.atStartOfDay(), lastDayOfMonth.atTime(23, 59, 59));
 
-		List<Leave> leaves = leaveDao.getLeavesByDateRange(
+		List<Leave> leaves = leaveDao.getEmployeeLeavesByDate(employeeId,
 				java.util.Date.from(firstDayOfMonth.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()),
 				java.util.Date.from(lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant()));
 

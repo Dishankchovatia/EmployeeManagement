@@ -72,28 +72,39 @@ public class AttendanceService {
 	}
 
 	public AttendanceStats getAttendanceStatsByDate(LocalDate date) {
-		List<Employee> allEmployees = employeeDao.getEmployees();
-		List<Attendance> dateAttendance = attendanceDao.getAttendanceByDate(date);
+	    List<Employee> activeEmployees = employeeDao.getEmployees().stream()
+	        .filter(Employee::isActive)
+	        .collect(Collectors.toList());
+	        
+	    List<Attendance> dateAttendance = attendanceDao.getAttendanceByDate(date);
 
-		Date targetDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+	    Date targetDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-		List<Leave> approvedLeaves = leaveDao
-				.getLeavesByDate(targetDate).stream().filter(leave -> leave.getStatus() == LeaveStatus.APPROVED
-						&& !leave.getStartDate().after(targetDate) && !leave.getEndDate().before(targetDate))
-				.collect(Collectors.toList());
+	    List<Leave> approvedLeaves = leaveDao
+	            .getLeavesByDate(targetDate).stream()
+	            .filter(leave -> leave.getStatus() == LeaveStatus.APPROVED
+	                    && !leave.getStartDate().after(targetDate) 
+	                    && !leave.getEndDate().before(targetDate)
+	                    && leave.getEmployee().isActive()) 
+	            .collect(Collectors.toList());
 
-		List<Integer> employeesOnLeave = approvedLeaves.stream().map(leave -> leave.getEmployee().getId())
-				.collect(Collectors.toList());
+	    List<Integer> employeesOnLeave = approvedLeaves.stream()
+	            .map(leave -> leave.getEmployee().getId())
+	            .collect(Collectors.toList());
 
-		AttendanceStats stats = new AttendanceStats();
-		stats.setTotalEmployees(allEmployees.size());
-		stats.setPresentEmployees(dateAttendance.size());
-		stats.setOnLeaveEmployees(employeesOnLeave.size());
-		stats.setAbsentEmployees(allEmployees.size() - (dateAttendance.size() + employeesOnLeave.size()));
-		stats.setAttendanceList(dateAttendance);
-		stats.setLeavesForToday(approvedLeaves);
-		stats.setDate(date);
+	    List<Attendance> activeEmployeeAttendance = dateAttendance.stream()
+	            .filter(attendance -> attendance.getEmployee().isActive())
+	            .collect(Collectors.toList());
 
-		return stats;
+	    AttendanceStats stats = new AttendanceStats();
+	    stats.setTotalEmployees(activeEmployees.size());
+	    stats.setPresentEmployees(activeEmployeeAttendance.size());
+	    stats.setOnLeaveEmployees(employeesOnLeave.size());
+	    stats.setAbsentEmployees(activeEmployees.size() - (activeEmployeeAttendance.size() + employeesOnLeave.size()));
+	    stats.setAttendanceList(activeEmployeeAttendance);
+	    stats.setLeavesForToday(approvedLeaves);
+	    stats.setDate(date);
+
+	    return stats;
 	}
 }

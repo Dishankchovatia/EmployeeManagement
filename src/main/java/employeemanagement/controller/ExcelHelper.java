@@ -47,7 +47,7 @@ public class ExcelHelper {
 	public String importEmployees(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 		if (file.isEmpty()) {
 			redirectAttributes.addFlashAttribute("message", "Please select a file to upload.");
-			return "redirect:/admin/listofemployees";
+			return "redirect:/listofemployees";
 		}
 
 		List<String> errors = new ArrayList<>();

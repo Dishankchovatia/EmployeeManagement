@@ -84,7 +84,6 @@ public class EmployeeController {
 			if (existingEmployee != null) {
 				employee.setVersion(existingEmployee.getVersion());
 			}
-
 			boolean emailExists = employeeDao.isEmailExists(employee.getEmailId())
 					&& !employee.getEmailId().equals(existingEmployee.getEmailId());
 			boolean mobileExists = employeeDao.isMobileNumberExists(employee.getEmpNumber())
@@ -98,9 +97,9 @@ public class EmployeeController {
 					model.addAttribute("errorMobile", "This mobile number is already in use.");
 				}
 
-				return new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
+				RedirectView redirectView = new RedirectView(request.getContextPath() + "/eupdate/" + employee.getId());
+				return redirectView;
 			}
-
 			if (result.hasErrors()) {
 				redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.employee", result);
 				redirectAttributes.addFlashAttribute("employee", employee);
@@ -283,7 +282,7 @@ public class EmployeeController {
         model.addAttribute("calendarData", calendarData);
         model.addAttribute("currentMonth", month);
         model.addAttribute("currentYear", year);
-        model.addAttribute("yearRange", yearRange);  // Add this
+        model.addAttribute("yearRange", yearRange);  
         model.addAttribute("monthYear", Month.of(month).toString() + " " + year);
         
         return "attendance_calendar";

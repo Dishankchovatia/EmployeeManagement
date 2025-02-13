@@ -31,7 +31,7 @@ public class Leave {
     private Date endDate;
     
     @NotBlank(message = "Leave type cannot be blank")
-    private String leaveType; // Sick, Casual, Personal, etc.
+    private String leaveType; 
     
     @NotBlank(message = "Reason cannot be blank")
     private String reason;

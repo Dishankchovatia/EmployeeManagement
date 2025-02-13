@@ -51,6 +51,8 @@ public class LeaveController {
     	Leave leave = new Leave();
         leave.setStartDate(new Date());
         leave.setEndDate(new Date());
+        
+        
         model.addAttribute("leave", leave);
         return "apply_leave";
     }

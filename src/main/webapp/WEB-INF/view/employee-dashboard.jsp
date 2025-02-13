@@ -398,7 +398,6 @@ function formatTime(dateTimeString) {
     return date.toLocaleTimeString();
 }
 
-// Function to calculate duration of the current session
 function calculateDuration(checkInTime, endTime = new Date()) {
     const checkInDate = new Date(checkInTime);
     if (isNaN(checkInDate)) {
@@ -412,16 +411,12 @@ function calculateDuration(checkInTime, endTime = new Date()) {
     return diffHrs + " hours " + diffMins + " minutes";
 }
 
-
-
-// Function to update the clock
 function updateClock() {
     const now = new Date();
     const timeString = now.toLocaleTimeString();
     document.getElementById('currentTime').textContent = 'Current Time: ' + timeString;
 }
 
-// Function to update attendance status
 function updateAttendanceStatus() {
     const token = document.getElementById('csrfToken').value;
     const statusDiv = document.getElementById('attendanceStatus'); 

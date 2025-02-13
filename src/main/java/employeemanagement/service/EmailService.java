@@ -41,7 +41,6 @@ public class EmailService {
             email.setMsg(emailContent);
             email.addTo(employee.getEmailId()); 
             email.send();
-
             System.out.println("Email sent successfully!");
         } catch (EmailException e) {
             e.printStackTrace();
