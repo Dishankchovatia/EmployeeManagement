@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,56 +109,65 @@ public class AttendanceReportService {
 	}
 
 	public List<List<CalendarDay>> generateCalendarData(int employeeId, int month, int year) {
-		LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
-		LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
+	    LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+	    LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
+	    
+	    List<Attendance> attendances = attendanceDao.getAttendanceByEmployeeAndDateRange(employeeId,
+	            firstDayOfMonth.atStartOfDay(), lastDayOfMonth.atTime(23, 59, 59));
+	    List<Leave> leaves = leaveDao.getEmployeeLeavesByDate(employeeId,
+	            java.util.Date.from(firstDayOfMonth.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()),
+	            java.util.Date.from(lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant()));
 
-		List<Attendance> attendances = attendanceDao.getAttendanceByEmployeeAndDateRange(employeeId,
-				firstDayOfMonth.atStartOfDay(), lastDayOfMonth.atTime(23, 59, 59));
+	    List<List<CalendarDay>> calendar = new ArrayList<>();
+	    
+	    LocalDate currentDate = firstDayOfMonth.minusDays(firstDayOfMonth.getDayOfWeek().getValue() - 1);
+	    
+	    LocalDate lastCalendarDay = lastDayOfMonth.plusDays(7L - lastDayOfMonth.getDayOfWeek().getValue());
+	    
+	    if (ChronoUnit.DAYS.between(currentDate, lastCalendarDay) > 50) {
+	        throw new IllegalStateException("Calendar period exceeds maximum allowed days");
+	    }
 
-		List<Leave> leaves = leaveDao.getEmployeeLeavesByDate(employeeId,
-				java.util.Date.from(firstDayOfMonth.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()),
-				java.util.Date.from(lastDayOfMonth.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant()));
-
-		List<List<CalendarDay>> calendar = new ArrayList<>();
-		LocalDate currentDate = firstDayOfMonth.minusDays(firstDayOfMonth.getDayOfWeek().getValue());
-
-		while (!currentDate.isAfter(lastDayOfMonth)) {
-			List<CalendarDay> week = new ArrayList<>();
-
-			for (int i = 0; i < 7; i++) {
-				CalendarDay day = new CalendarDay();
-				LocalDate finalCurrentDate = currentDate;
-				day.setDate(finalCurrentDate.getDayOfMonth());
-				day.setOutsideMonth(finalCurrentDate.getMonth() != firstDayOfMonth.getMonth());
-
-				if (!day.isOutsideMonth()) {
-					boolean isPresent = attendances.stream()
-							.anyMatch(a -> a.getDate().toLocalDate().equals(finalCurrentDate));
-					boolean isOnLeave = leaves.stream()
-							.anyMatch(l -> isDateInRange(finalCurrentDate, l.getStartDate(), l.getEndDate()));
-
-					if (isPresent) {
-						day.setStatus("Present");
-					} else if (isOnLeave) {
-						day.setStatus("Leave");
-					} else {
-						day.setStatus("Absent");
-					}
-				}
-
-				week.add(day);
-				currentDate = finalCurrentDate.plusDays(1);
-			}
-
-			calendar.add(week);
-			if (currentDate.isAfter(lastDayOfMonth) && currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-				break;
-			}
-		}
-
-		return calendar;
+	    while (!currentDate.isAfter(lastCalendarDay)) {
+	        List<CalendarDay> week = new ArrayList<>(7); 
+	        
+	        for (int i = 0; i < 7; i++) {
+	            CalendarDay day = new CalendarDay();
+	            day.setDate(currentDate.getDayOfMonth());
+	            day.setOutsideMonth(currentDate.getMonth() != firstDayOfMonth.getMonth());
+	            
+	            if (!day.isOutsideMonth()) {
+	                if (currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+	                    day.setStatus("");
+	                } else {
+	                    setDayStatus(day, currentDate, attendances, leaves);
+	                }
+	            }
+	            
+	            week.add(day);
+	            currentDate = currentDate.plusDays(1);
+	        }
+	        
+	        calendar.add(week);
+	    }
+	    
+	    return calendar;
 	}
 
+	private void setDayStatus(CalendarDay day, LocalDate date, List<Attendance> attendances, List<Leave> leaves) {
+	    boolean isPresent = attendances.stream()
+	            .anyMatch(a -> a.getDate().toLocalDate().equals(date));
+	    boolean isOnLeave = leaves.stream()
+	            .anyMatch(l -> isDateInRange(date, l.getStartDate(), l.getEndDate()));
+	    
+	    if (isPresent) {
+	        day.setStatus("Present");
+	    } else if (isOnLeave) {
+	        day.setStatus("Leave");
+	    } else {
+	        day.setStatus(!date.isAfter(LocalDate.now()) ? "Absent" : "");
+	    }
+	}
 	private boolean isDateInRange(LocalDate date, Date startDate, Date endDate) {
 		LocalDate start = new java.sql.Date(startDate.getTime()).toLocalDate();
 		LocalDate end = new java.sql.Date(endDate.getTime()).toLocalDate();
