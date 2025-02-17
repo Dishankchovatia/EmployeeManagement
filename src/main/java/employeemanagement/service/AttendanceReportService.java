@@ -51,7 +51,7 @@ public class AttendanceReportService {
 		int leaveDays = calculateLeaveDays(leaves);
 		record.setLeaveDays(leaveDays);
 
-		record.setAbsentDays(totalDays - record.getPresentDays() - leaveDays);
+		record.setAbsentDays(Math.max(0, totalDays - record.getPresentDays() - leaveDays));
 
 		double totalHours = 0;
 		int lateArrivals = 0;
@@ -86,7 +86,7 @@ public class AttendanceReportService {
 		LocalDateTime current = startDate;
 
 		while (!current.isAfter(endDate)) {
-			if (current.getDayOfWeek().getValue() < 6) {
+			if (current.getDayOfWeek().getValue() < 7) {
 				totalDays++;
 			}
 			current = current.plusDays(1);
